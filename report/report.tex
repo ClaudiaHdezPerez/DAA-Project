@@ -1,0 +1,141 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{algorithm, algorithmic}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\title{Proyecto Final de Diseño y Análisis de Algoritmos
+
+\
+
+\large Problema: ``El Comerciante Holandés''}
+\author{Claudia Hernández Pérez \and Joel Aparicio Tamayo}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Este documento presenta el análisis completo del problema \emph{``El Comerciante Holandés''}.
+\end{abstract}
+
+\section{Definición del problema}
+
+La prestigiosa Compañía Holandesa de las Indias Orientales, en su afán por dominar el comercio mundial, se enfrenta a un desafío monumental. Un capitán experimentado, al mando de una de sus valiosas flotas, debe emprender una expedición comercial que partirá de Ámsterdam y, tras recorrer los puertos más lucrativos del Viejo y Nuevo Continente, deberá regresar a su puerto de origen.
+
+Los inversores de la Compañía han proporcionado un capital inicial considerable y han establecido un plazo máximo para la duración de la expedición. El capitán tiene la libertad de elegir qué puertos visitar y en qué orden, con la única condición de no visitar el mismo puerto dos veces en el mismo viaje (por cuestiones de acuerdos comerciales y evitar saturación del mercado).
+
+En cada puerto, el capitán encontrará una lista de mercancías disponibles, con sus respectivos precios de compra y venta (que pueden variar significativamente). El capitán puede vender las mercancías que lleva a bordo y comprar nuevas. Sin embargo, debe ser astuto:
+
+\begin{itemize}
+    \item La capacidad de carga de su barco es limitada, por lo que no puede llevar más de lo que su bodega permite.
+    \item No es necesario vender todas las mercancías al llegar a un puerto; el capitán puede decidir retener parte de su cargamento si cree que podrá venderlo a un precio más alto en un puerto posterior.
+    \item Debe asegurarse de que, después de cada operación de compra, le quede suficiente dinero para cubrir los salarios de la tripulación, los impuestos portuarios y las posibles reparaciones del barco hasta el siguiente destino.
+    \item El tiempo es oro; la duración total del viaje, incluyendo el tiempo de navegación entre puertos, no debe exceder el plazo fijado por los inversores.
+\end{itemize}
+
+El objetivo del capitán es claro: planificar la ruta y las transacciones en cada puerto de tal manera que, al regresar a Amsterdam, el capital final de la expedición sea el máximo posible, superando con creces la inversión inicial.
+
+
+\section{Formalización del Problema}
+Antes de abordar cualquier solución algorítmica, es fundamental establecer una representación matemática precisa del problema. Esta sección presenta nuestra formalización del Comerciante Holandés, definiendo las estructuras de datos de entrada, las restricciones que deben cumplirse y la función objetivo a optimizar. Este modelo elimina las ambigüedades de la descripción narrativa original.
+\subsection{Definiciones Matemáticas}
+
+Sea:
+\begin{itemize}
+    \item $G = (V, E)$: grafo completo de $n$ puertos, donde $V = \{0, 1, \dots, n-1\}$ (0 representa Ámsterdam, punto de inicio y fin).
+    \item $d_{ij}$: tiempo de navegación entre puertos $i$ y $j$. Se asume:
+
+    \begin{itemize}
+        \item $d_{ii} = 0, \quad \forall i$
+        \item $d_{ij} = d_{ji}, \quad \forall i, j$
+        \item $d_{ij} \le d_{ik} + d_{kj}, \quad \forall i, k, j$
+    \end{itemize}
+    \item $T_{max}$: tiempo máximo total permitido para la expedición.
+    \item $C_{max}$: capacidad máxima de carga del barco.
+    \item $K_0$: capital inicial proporcionado por los inversores.
+    \item $K_{min}$: capital mínimo que debe mantenerse tras cada transacción (para gastos operativos).
+\end{itemize}
+
+En cada puerto $i \in V$:
+\begin{itemize}
+    \item $M_i = \{(w_{ik}, p_{ik}^{compra}, p_{ik}^{venta})\}_{k=1}^{m_i}$: conjunto de $m_i$ mercancías disponibles, donde:
+    \begin{itemize}
+        \item $w_{ik} \in \mathbb{R}$: peso de la mercancía $k$ en puerto $i$
+        \item $p_{ik}^{compra} \in \mathbb{R}$: precio de compra de la mercancía $k$ en puerto $i$
+        \item $p_{ik}^{venta} \in \mathbb{R}$: precio de venta de la mercancía $k$ en puerto $i$
+    \end{itemize}
+    \item \textbf{Importante}: No hay garantía de que $p^{venta} > p^{compra}$. Puede haber mercancías con pérdida potencial, lo que obliga al capitán a tomar decisiones estratégicas.
+\end{itemize}
+
+\subsection{Estado del Sistema}
+El estado al llegar a un puerto $i$ se define como una tupla:
+\[
+S_i = (K_i, L_i, R_i, t_i)
+\]
+donde:
+\begin{itemize}
+    \item $K_i \in \mathbb{R}$: capital disponible al llegar al puerto $i$.
+    \item $L_i \subseteq \{m = (i', k, w, p^{compra}): i', k \in \mathbb{N}; w, p^{compra} \in \mathbb{R}\}$: conjunto de mercancías a bordo, donde cada mercancía está identificada por:
+    \begin{itemize}
+        \item $i'$: puerto donde fue comprada
+        \item $k$: índice de la mercancía en ese puerto
+        \item $w$: peso de la mercancía
+        \item $p^{compra}$: precio pagado por la mercancía
+    \end{itemize}
+    \item $R_i \subseteq V$: conjunto de puertos ya visitados (ruta parcial).
+    \item $t_i \in \mathbb{R}^+$: tiempo acumulado hasta llegar al puerto $i$.
+\end{itemize}
+
+\subsection{Operaciones}
+Al llegar a un puerto $i$, el capitán realiza secuencialmente:
+
+\begin{enumerate}
+    \item \textbf{Venta parcial}: Para cada mercancía $g = (i_g, k_g, w_g, p_g^{compra}) \in L_i$, el capitán decide si venderla en el puerto actual $i$ obteniendo $p_{i,k_g}^{venta}$ (precio de venta de esa mercancía en puerto $i$). Sea $M_i' \subseteq L_i$ el subconjunto de mercancías vendidas:
+    \[
+    K_i \leftarrow K_i + \sum_{g \in M_i'} p_{i,k_g}^{venta}
+    \]
+    Las mercancías vendidas se eliminan de la carga: $L_i \leftarrow L_i \setminus M_i'$.
+    
+    \item \textbf{Compra selectiva}: Considerando las mercancías disponibles en $M_i$, el capitán selecciona un subconjunto $C_i \subseteq M_i$ para comprar, sujeto a:
+    \begin{itemize}
+        \item \textbf{Restricción financiera}: \[K_i - \sum_{(w,p^{compra},p^{venta}) \in C_i} p^{compra} \geq K_{min}\]
+        \item \textbf{Restricción de capacidad}: \[\sum_{g \in L_i} w_g + \sum_{(w,p^{compra},p^{venta}) \in C_i} w \leq C_{max}\]
+    \end{itemize}
+    Las mercancías compradas se añaden a bordo: \[ \forall (w,p^{compra},p^{venta}) \in C_i: \quad L_i \leftarrow (i, k, w, p^{compra})\] 
+    
+    Luego se actualiza el capital:
+    \[
+    K_i \leftarrow K_i - \sum_{(w,p^{compra},p^{venta}) \in C_i} p^{compra}
+    \]
+    
+    \item \textbf{Selección de próximo destino}: Sea $j \in V \setminus (R_i \cup \{i\})$ un candidato a próximo puerto, $j$ es seleccionable si:
+\[
+t_i + d_{ij} + d_{j0} \leq T_{max}
+\]
+Si ningún $j$ cumple esta condición, el capitán debe regresar a Ámsterdam ($j = 0$).
+Luego de seleccionar el próximo destino, se actualiza el recorrido actual: \[R_i \leftarrow R_i \cup \{i\}\]
+\end{enumerate}
+
+\subsection{Función Objetivo}
+
+\[\max K_f \quad ,\] donde $K_f$ es el capital tras vender cualquier carga restante en Ámsterdam (a precios de Ámsterdam).
+
+\textbf{sujeto a:}
+\begin{enumerate}
+    \item \textbf{Ruta simple}: Sea $\pi = (v_0, v_1, \dots, v_m, v_{m+1})$ la secuencia de puertos visitados, donde $v_0 = v_{m+1} = 0$ (Ámsterdam). Entonces:
+    \[
+    \forall i \in \{1, \dots, m\}: v_i \in V \setminus \{0\} \quad \wedge  \quad \forall i \neq j \in \{1, \dots, m\}: v_i \neq v_j
+    \]
+    Es decir, ningún puerto no-inicial se repite en la ruta.
+    \item \textbf{Tiempo límite}: $t_f \leq T_{max}$, siendo $t_f$ el tiempo de llegada a Ámsterdam al finalizar el viaje.
+    \item \textbf{Capital suficiente para operatividad}: $\forall i$, $K_i \geq K_{min}$.
+    \item \textbf{Capacidad}: $\forall i$, $\sum_{g \in L_i} w_g \leq C_{max}$.
+\end{enumerate}
+
+\end{document}

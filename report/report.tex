@@ -138,4 +138,51 @@ Luego de seleccionar el próximo destino, se actualiza el recorrido actual: \[R_
     \item \textbf{Capacidad}: $\forall i$, $\sum_{g \in L_i} w_g \leq C_{max}$.
 \end{enumerate}
 
+\section{Análisis de Complejidad Computacional}
+
+El problema es presentado originalmente como un problema de optimización, cuyo objetivo es hallar una ruta y una estrategia de transacciones que maximicen el capital final $K_f$. Para demostrar su clasificación en la jerarquía de complejidad, se define su versión de decisión asociada:
+
+\begin{quote}
+    \textit{Dada la instancia del problema descrita en la Sección 2 y un umbral de capital $K_{objetivo} \in \mathbb{R}$, ¿existe una secuencia de puertos y transacciones tales que el tiempo total no exceda $T_{max}$ y el capital al regresar a Ámsterdam sea al menos $K_{objetivo}$?}
+\end{quote}
+
+A continuación, se demuestra que este problema es \textbf{NP-Completo}.
+
+\subsection{Pertenencia a la Clase NP}
+Sea un certificado de solución una secuencia de puertos $\pi = (v_0, v_1, \dots, v_m, v_{m+1})$ y una secuencia de conjuntos de transacciones (compras $C_i$ y ventas $M'_i$) para cada puerto visitado. La verificación del certificado consiste en:
+
+\begin{enumerate}
+    \item \textbf{Verificación de ruta:} Comprobar que $\pi$ es una ruta simple (excepto por $v_0$ y $v_{m+1}$) y que el tiempo total de navegación cumple $\sum d_{v_i, v_{i+1}} \leq T_{max}$. Esta operación se realiza en $O(m)$ mediante un vector de presencia para los nodos.
+    \item \textbf{Verificación de carga:} En cada puerto $v_i$, se calcula el peso total sumando las mercancías retenidas en la bodega $L_i$ después de vender y las nuevas adquisiciones $C_i \subseteq M_i$, verificando que $\sum_{g \in L_i} w_g + \sum_{C_i} w \leq C_{max}$. La complejidad es $O(m \cdot \max|L_i|)$, lo cual es polinomial respecto a la cantidad de mercancías.
+    \item \textbf{Verificación financiera:} Simular el flujo de caja $K_i$ sumando ingresos por ventas $M'_i$ y restando costos de compra $C_i$. Se verifica que en todo momento $K_i \geq K_{min}$ y que al regresar a Ámsterdam el capital final $K_f \geq K_{objetivo}$.
+\end{enumerate}
+
+Como todas las operaciones de verificación se realizan en tiempo polinomial respecto al tamaño de la entrada, el problema \textbf{pertenece a NP}.
+
+\subsection{NP-Completitud mediante Reducción de TSP}
+Para demostrar la NP-Completitud, se reduce una instancia del problema de decisión de \textbf{TSP} (NP-Completo) a una instancia del problema.
+
+\begin{quote}
+    \textit{\textbf{Definición de TSP:} Dado un grafo $G_{TSP}=(V', E', \omega)$ y una distancia límite $L$, ¿existe un tour que visite todos los nodos de $V'$ tal que la distancia recorrida sea a lo sumo L?}
+
+    $\omega(e_{ij})$: distancia entre nodos $i$ y $j$.
+\end{quote}
+
+\subsubsection{Construcción de la reducción:}
+Dada una instancia de \textbf{TSP}, se construye una instancia del problema de la siguiente forma:
+\begin{itemize}
+    \item \textbf{Grafo y Tiempos:} $V = V'$, $d_{ij} = peso(E'_{ij})$, y se fija $T_{max} = L$.
+    \item \textbf{Incentivo a la Visita:} En cada puerto $i \in V \setminus \{0\}$, se define una única mercancía $m_i \in M_i$ con $w=0$ y $p_{compra}=0$. Su precio de venta es 0 en todo puerto, excepto en Ámsterdam ($v_0$), donde $p_{venta}=1$.
+    \item \textbf{Condiciones Iniciales:} $K_0 = 0$, $K_{min} = 0$, $C_{max} = \infty$.
+    \item \textbf{Meta de Ganancia:} Se define la meta de capital final como $K_{objetivo} = |V|-1$.
+\end{itemize} 
+
+\subsubsection{Demostración de equivalencia:}
+\begin{itemize}
+    \item ($\Rightarrow$) Si \textbf{TSP} tiene un tour de longitud de a lo sumo \textit{L}, el capitán puede seguir dicho tour visitando cada puerto una vez, recoger las $|V|-1$ mercancías y volver a Ámsterdam dentro del tiempo $T_{max}$. Al venderlas, obtiene $K_f = |V|-1$, satisfaciendo el problema.
+    \item ($\Leftarrow$) Si el problema tiene solución con capital de al menos \textit{K}, el capitán necesariamente visitó todos los puertos para recolectar el capital (dada la ausencia de otros beneficios). Como lo hizo en un tiempo menor de $T_{max}$, el recorrido representa un tour válido para \textbf{TSP}.
+\end{itemize}
+
+La reducción es ejecutable en tiempo polinomial y dado que \textbf{TSP} se reduce al problema, concluimos que es \textbf{NP-Completo}.
+
 \end{document}

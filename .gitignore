@@ -216,3 +216,7 @@ __marimo__/
 
 # LaTex draft
 draft/
+
+# not ready files
+heuristics.py
+models.py

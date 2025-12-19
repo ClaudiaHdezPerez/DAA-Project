@@ -14,15 +14,15 @@ def solve(
     ports_visited = [False] * n
     ports_visited[0] = True
     m = len(items_by_port[0])
-    return travel(
+    return buy(
         n, d, t_max, c_max, k_0, k_min, m,
-        items_by_port, 0, [], ports_visited, start=True
+        items_by_port, 0, [], ports_visited, 0
     )
 
 def sell(
-    n: int, d: List[List[float]], t_max: float, c_max: float,
-    k_0: float, k_min: float, size: int, items_by_port: List[List[Item]],
-    port: int, items_on_board: List[Merchandise], ports_visited: list[bool]
+    n: int, d: List[List[float]], t_max: float, c_max: float, k_0: float,
+    k_min: float, size: int, items_by_port: List[List[Item]], port: int,
+    items_on_board: List[Merchandise], ports_visited: list[bool], j: int
 ) -> float:
     purchase_gain = buy(
         n, d, t_max, c_max, k_0, k_min, size, items_by_port,
@@ -30,14 +30,21 @@ def sell(
     )
     sell_gain = -1
     
+    if j >= len(items_on_board):
+        return purchase_gain
+    
     if items_on_board:
-        m = items_on_board.pop()
+        m = items_on_board.pop(j)
         sell_price = items_by_port[port][m.k].sell_price
         sell_gain = sell(
-            n, d, t_max, c_max + m.w, k_0 + sell_price,
-            k_min, size, items_by_port, port, items_on_board, ports_visited
+            n, d, t_max, c_max + m.w, k_0 + sell_price, k_min, size,
+            items_by_port, port, items_on_board, ports_visited, j
         )
-        items_on_board.append(m)
+        items_on_board.insert(j, m)
+        sell_gain = max(sell_gain, sell(
+            n, d, t_max, c_max, k_0, k_min, size, items_by_port,
+            port, items_on_board, ports_visited, j + 1
+        ))
     
     return max(purchase_gain, sell_gain)
 
@@ -88,8 +95,7 @@ def buy(
 def travel(
     n: int, d: List[List[float]], t_max: float, c_max: float,
     k_0: float, k_min: float, size: int, items_by_port: List[List[Item]],
-    port: int, items_on_board: List[Merchandise],
-    ports_visited: list[bool], start=False
+    port: int, items_on_board: List[Merchandise], ports_visited: list[bool]
 ) -> float:
     
     final_gain = k_0 + sum([
@@ -98,18 +104,16 @@ def travel(
     
     max_gain = -1
     
-    for i in range(n):
-        if (ports_visited[i] and i > 0) or (
-            i == 0 and port == 0 and not start
-        ):
+    for i in range(n):        
+        if (ports_visited[i] and i > 0) or i == port:
             continue
         
         if t_max >= d[port][i] + d[i][0]:
             ports_visited[i] = True
             next_port_gain = sell(
-                n, d, t_max - d[port][i], c_max, k_0, k_min,
-                size, items_by_port, i, items_on_board, ports_visited
-            ) if i > 0 or start else final_gain
+                n, d, t_max - d[port][i], c_max, k_0, k_min, size,
+                items_by_port, i, items_on_board, ports_visited, 0
+            ) if i > 0 else final_gain
             max_gain = max(max_gain, next_port_gain)
             
             if i > 0:

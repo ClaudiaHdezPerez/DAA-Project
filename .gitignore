@@ -220,3 +220,6 @@ draft/
 # not ready files
 heuristics.py
 models.py
+
+# test cases
+test_cases/

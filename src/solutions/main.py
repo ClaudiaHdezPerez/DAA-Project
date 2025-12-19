@@ -1,6 +1,9 @@
 from math import inf
-# from brute_force_CHP import solve, List, Item
-from brute_force_JAT import solve, List, Item
+from typing import List
+from utils import Item 
+# from brute_force_CHP import solve
+# from brute_force_JAT import solve
+from efficient import solve
 
 n: int = 3
 d: List[List[float]] = [

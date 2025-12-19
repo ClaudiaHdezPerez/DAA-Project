@@ -14,10 +14,10 @@ def solve(
     ports_visited = [False] * n
     ports_visited[0] = True
     m = len(items_by_port[0])
-    return buy(
+    return max(k_0, buy(
         n, d, t_max, c_max, k_0, k_min, m,
         items_by_port, 0, [], ports_visited, 0
-    )
+    ))
 
 def sell(
     n: int, d: List[List[float]], t_max: float, c_max: float, k_0: float,

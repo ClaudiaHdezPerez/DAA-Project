@@ -60,9 +60,6 @@ def generate_random_instance(
             d[j][i] = round(distance, 1)
             
     d = enforce_triangle_inequality(d)
-    # for i in range(n):
-    #     for j in range(n):
-    #         d[i][j] = round(d[i][j], 1)
     
     # 4. Generar tiempo máximo
     if n > 1:
@@ -92,22 +89,11 @@ def generate_random_instance(
     # 8. Generar ítems por puerto - TODOS LOS PUERTOS TIENEN EXACTAMENTE m TIPOS
     items_by_port = []
     
-    # Primero, generar los m tipos para Ámsterdam (puerto 0)
-    # En Ámsterdam, todos los ítems tienen w=inf, buy=inf, sell=-inf
-    amsterdam_items = []
-    for _ in range(m):
-        amsterdam_items.append(Item(
-            w=float('inf'),
-            buy_price=float('inf'),
-            sell_price=float('-inf')
-        ))
-    items_by_port.append(amsterdam_items)
-    
-    # Luego, generar para los otros puertos (1 a n-1)
-    for port in range(1, n):
+    # Luego, generar para los otros puertos (0 a n-1)
+    for _ in range(0, n):
         port_items = []
         
-        for item_index in range(m):  # Exactamente m tipos por puerto
+        for _ in range(m):  # Exactamente m tipos por puerto
             # Peso aleatorio (entre 1 y c_max/2 para que sea posible cargar varios)
             w = random.uniform(1, c_max / 2)
             w = round(w, 1)
@@ -119,17 +105,19 @@ def generate_random_instance(
             
             # Precio de venta
             # Algunos ítems pueden no ser rentables (venta < compra)
-            profit_margin = random.uniform(0.8, 1.5)  # 0.8 = pérdida, 1.5 = ganancia
+            profit_margin = random.uniform(0.7, 1)  # 0.8 = pérdida, 1.5 = ganancia
             sell_price = round(buy_price * profit_margin, 1)
+
+            item = Item(w=w, buy_price=buy_price, sell_price=sell_price)
+            item_inf = Item(            
+                w=float('inf'),
+                buy_price=float('inf'),
+                sell_price=float('-inf')
+            )
             
-            # Asegurar que al menos algunos ítems sean rentables
-            if random.random() < 0.7:  # 70% de ítems rentables
-                sell_price = max(sell_price, buy_price * 1.1)  # Al menos 10% de ganancia
-            
-            # Redondear para evitar problemas de precisión flotante
-            sell_price = round(sell_price, 2)
-            
-            port_items.append(Item(w=w, buy_price=buy_price, sell_price=sell_price))
+            final_item = item if random.uniform(0, 1) < 0.7 else item_inf
+
+            port_items.append(final_item)
         
         items_by_port.append(port_items)
     
@@ -221,10 +209,12 @@ def save_instance_to_file(
             f.write(f"    {items_str},\n")
         f.write("]\n")
 
-def generate_solution_file(filename: str, n: int, d: List[List[float]], 
-                          t_max: float, c_max: float, k_0: float, 
-                          k_min: float, items_by_port: List[List[Item]], 
-                          case_num: int):
+def generate_solution_file(
+    filename: str, n: int, d: List[List[float]], 
+    t_max: float, c_max: float, k_0: float, 
+    k_min: float, items_by_port: List[List[Item]], 
+    case_num: int
+):
     """Genera un archivo que ejecuta ambos algoritmos y compara resultados."""
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(f"# Solución para caso de prueba {case_num}\n")
@@ -253,7 +243,8 @@ def generate_solution_file(filename: str, n: int, d: List[List[float]],
         f.write("    JAT_available = False\n\n")
         
         f.write("try:\n")
-        f.write("    from solutions.brute_force_CHP import solve as solve_CHP\n")
+        f.write("    from solutions.efficient import solve as solve_CHP\n")
+        # f.write("    from solutions.brute_force_CHP import solve as solve_CHP\n")
         f.write("    CHP_available = True\n")
         f.write("except ImportError as e:\n")
         f.write("    print(f'Algoritmo CHP no disponible: {e}')\n")

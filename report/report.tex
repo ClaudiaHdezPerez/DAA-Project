@@ -70,7 +70,9 @@ En cada puerto $i \in V$:
         \item $p_{ik}^{compra} \in \mathbb{R}$: precio de compra de la mercancía $k$ en puerto $i$
         \item $p_{ik}^{venta} \in \mathbb{R}$: precio de venta de la mercancía $k$ en puerto $i$
     \end{itemize}
-    \item \textbf{Importante}: No hay garantía de que $p^{venta} > p^{compra}$. Puede haber mercancías con pérdida potencial, lo que obliga al capitán a tomar decisiones estratégicas.
+    \item \textbf{Importante}: No hay garantía de que $p_{ik}^{venta} > p_{jk}^{compra}$ $ \forall i \neq j$. Pueden haber mercancías con pérdida potencial, lo que obliga al capitán a tomar decisiones estratégicas. Sin embargo sí se garantiza que 
+    
+    $p_{ik}^{venta} \leq p_{ik}^{compra}$ $\forall i$ (los del puerto tampoco son tontos, no van a pagar más de lo que ofertan).
 \end{itemize}
 
 \subsection{Estado del Sistema}

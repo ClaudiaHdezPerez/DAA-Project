@@ -46,10 +46,7 @@ def solve(
         while unvisited:
             # Vender mercancías en el puerto actual si es beneficioso
             state = sell_in_current_port(state, items_by_port)
-            
-            # Comprar mercancías prometedoras
-            state = buy_in_current_port(state, items_by_port[state.current_port])
-            
+
             # Elegir próximo puerto
             next_port = select_next_port_greedy(state, unvisited, d, t_max)
             
@@ -60,7 +57,10 @@ def solve(
             travel_time = d[state.current_port][next_port]
             if state.time + travel_time > t_max:
                 break
-                
+            
+            # Comprar mercancías prometedoras
+            state = buy_in_current_port(state, items_by_port, next_port)
+                                        
             state.time += travel_time
             state.current_port = next_port
             state.route.append(next_port)
@@ -100,7 +100,7 @@ def solve(
         new_state.inventory = new_inventory
         return new_state
     
-    def buy_in_current_port(state: State, items: List[Item]) -> State:
+    def buy_in_current_port(state: State, items_by_port: List[List[Item]], next_port: int) -> State:
         """Compra mercancías usando mochila 0/1 para optimizar."""
         new_state = state.copy()
         port = state.current_port
@@ -111,10 +111,10 @@ def solve(
         
         # Filtrar items que podemos comprar
         candidate_items = []
-        for k, item in enumerate(items):
+        for k, item in enumerate(items_by_port[state.current_port]):
             if item.w <= available_capacity and item.buy_price <= available_capital:
                 # Estimar ganancia (simple heurística)
-                estimated_profit = item.sell_price - item.buy_price
+                estimated_profit = items_by_port[next_port][k].sell_price - item.buy_price
                 if estimated_profit > 0:
                     candidate_items.append((k, item.w, item.buy_price, estimated_profit))
         
@@ -137,6 +137,7 @@ def solve(
                 available_capacity -= weight
                 available_capital -= buy_price
         
+        new_state.capital -= k_min
         return new_state
     
     def select_next_port_greedy(state: State, unvisited: Set[int], 
@@ -216,10 +217,10 @@ def solve(
             state = sell_in_current_port(state, items_by_port)
             
             # Comprar
-            state = buy_in_current_port(state, items_by_port[next_port])
+            state = buy_in_current_port(state, items_by_port, next_port)
             
             # Verificar restricciones
-            if state.capital < k_min or state.used_capacity > c_max:
+            if state.capital < 0 or state.used_capacity > c_max:
                 return None
             
             # Actualizar ruta

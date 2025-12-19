@@ -14,7 +14,7 @@ def solve(
 ) -> float:
     return _solve(
         n, d, t_max, c_max, k_0, k_min, 
-        items_by_port, 0, float(-inf), [False for _ in range(n)],
+        items_by_port, 0, k_0, [False for _ in range(n)],
         [], [[] for _ in range(n)]
     )
 
@@ -67,6 +67,9 @@ def _profit_by_route(
     items_by_port: List[List[Item]], route: List[int],
     l_i: List[List[Merchandise]], i: int, max_profit: float
 ) -> float:
+    if k_0 < 0:
+        return float(-inf)
+    
     port = route[i]
     
     if i == len(route) - 1:

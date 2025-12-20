@@ -1,0 +1,652 @@
+REPORTE DE VALIDACIÓN - Comparación brute vs efficient
+============================================================
+
+Total casos analizados: 100
+Casos con resultados coincidentes: 60
+Casos con resultados diferentes: 40
+Casos con solo un algoritmo: 0
+Casos fallidos: 0
+
+DETALLE POR CASO:
+------------------------------------------------------------
+
+Caso 1:
+  Archivo: test_case_1_solution.py
+  Estado: PASADO
+  Resultado brute: 17.0
+  Resultado efficient: 17.0
+
+Caso 2:
+  Archivo: test_case_2_solution.py
+  Estado: FALLIDO
+  Resultado brute: 22.799999999999997
+  Resultado efficient: 21.7
+  Diferencia: 1.100000
+
+Caso 3:
+  Archivo: test_case_3_solution.py
+  Estado: PASADO
+  Resultado brute: 16.3
+  Resultado efficient: 16.3
+
+Caso 4:
+  Archivo: test_case_4_solution.py
+  Estado: PASADO
+  Resultado brute: 19.4
+  Resultado efficient: 19.4
+
+Caso 5:
+  Archivo: test_case_5_solution.py
+  Estado: PASADO
+  Resultado brute: 23.6
+  Resultado efficient: 23.6
+
+Caso 6:
+  Archivo: test_case_6_solution.py
+  Estado: PASADO
+  Resultado brute: 20.2
+  Resultado efficient: 20.2
+
+Caso 7:
+  Archivo: test_case_7_solution.py
+  Estado: FALLIDO
+  Resultado brute: 83.19999999999999
+  Resultado efficient: 71.49999999999999
+  Diferencia: 11.700000
+
+Caso 8:
+  Archivo: test_case_8_solution.py
+  Estado: FALLIDO
+  Resultado brute: 58.0
+  Resultado efficient: 32.0
+  Diferencia: 26.000000
+
+Caso 9:
+  Archivo: test_case_9_solution.py
+  Estado: FALLIDO
+  Resultado brute: 51.3
+  Resultado efficient: 46.4
+  Diferencia: 4.900000
+
+Caso 10:
+  Archivo: test_case_10_solution.py
+  Estado: FALLIDO
+  Resultado brute: 37.9
+  Resultado efficient: 33.2
+  Diferencia: 4.700000
+
+Caso 11:
+  Archivo: test_case_11_solution.py
+  Estado: PASADO
+  Resultado brute: 16.6
+  Resultado efficient: 16.6
+
+Caso 12:
+  Archivo: test_case_12_solution.py
+  Estado: PASADO
+  Resultado brute: 37.8
+  Resultado efficient: 37.8
+
+Caso 13:
+  Archivo: test_case_13_solution.py
+  Estado: FALLIDO
+  Resultado brute: 49.9
+  Resultado efficient: 36.5
+  Diferencia: 13.400000
+
+Caso 14:
+  Archivo: test_case_14_solution.py
+  Estado: FALLIDO
+  Resultado brute: 25.4
+  Resultado efficient: 18.6
+  Diferencia: 6.800000
+
+Caso 15:
+  Archivo: test_case_15_solution.py
+  Estado: FALLIDO
+  Resultado brute: 84.19999999999999
+  Resultado efficient: 76.1
+  Diferencia: 8.100000
+
+Caso 16:
+  Archivo: test_case_16_solution.py
+  Estado: PASADO
+  Resultado brute: 27.4
+  Resultado efficient: 27.4
+
+Caso 17:
+  Archivo: test_case_17_solution.py
+  Estado: FALLIDO
+  Resultado brute: 19.7
+  Resultado efficient: 15.7
+  Diferencia: 4.000000
+
+Caso 18:
+  Archivo: test_case_18_solution.py
+  Estado: PASADO
+  Resultado brute: 22.7
+  Resultado efficient: 22.7
+
+Caso 19:
+  Archivo: test_case_19_solution.py
+  Estado: PASADO
+  Resultado brute: 20.2
+  Resultado efficient: 20.2
+
+Caso 20:
+  Archivo: test_case_20_solution.py
+  Estado: FALLIDO
+  Resultado brute: 34.9
+  Resultado efficient: 23.0
+  Diferencia: 11.900000
+
+Caso 21:
+  Archivo: test_case_21_solution.py
+  Estado: PASADO
+  Resultado brute: 29.0
+  Resultado efficient: 29.0
+
+Caso 22:
+  Archivo: test_case_22_solution.py
+  Estado: FALLIDO
+  Resultado brute: 24.4
+  Resultado efficient: 19.4
+  Diferencia: 5.000000
+
+Caso 23:
+  Archivo: test_case_23_solution.py
+  Estado: PASADO
+  Resultado brute: 84.19999999999999
+  Resultado efficient: 84.19999999999999
+
+Caso 24:
+  Archivo: test_case_24_solution.py
+  Estado: FALLIDO
+  Resultado brute: 86.60000000000001
+  Resultado efficient: 67.7
+  Diferencia: 18.900000
+
+Caso 25:
+  Archivo: test_case_25_solution.py
+  Estado: PASADO
+  Resultado brute: 44.6
+  Resultado efficient: 44.6
+
+Caso 26:
+  Archivo: test_case_26_solution.py
+  Estado: PASADO
+  Resultado brute: 37.5
+  Resultado efficient: 37.5
+
+Caso 27:
+  Archivo: test_case_27_solution.py
+  Estado: PASADO
+  Resultado brute: 38.7
+  Resultado efficient: 38.7
+
+Caso 28:
+  Archivo: test_case_28_solution.py
+  Estado: PASADO
+  Resultado brute: 48.5
+  Resultado efficient: 48.5
+
+Caso 29:
+  Archivo: test_case_29_solution.py
+  Estado: FALLIDO
+  Resultado brute: 121.00000000000003
+  Resultado efficient: 90.2
+  Diferencia: 30.800000
+
+Caso 30:
+  Archivo: test_case_30_solution.py
+  Estado: PASADO
+  Resultado brute: 23.2
+  Resultado efficient: 23.2
+
+Caso 31:
+  Archivo: test_case_31_solution.py
+  Estado: FALLIDO
+  Resultado brute: 94.19999999999999
+  Resultado efficient: 87.39999999999999
+  Diferencia: 6.800000
+
+Caso 32:
+  Archivo: test_case_32_solution.py
+  Estado: FALLIDO
+  Resultado brute: 108.80000000000001
+  Resultado efficient: 88.69999999999999
+  Diferencia: 20.100000
+
+Caso 33:
+  Archivo: test_case_33_solution.py
+  Estado: PASADO
+  Resultado brute: 37.6
+  Resultado efficient: 37.6
+
+Caso 34:
+  Archivo: test_case_34_solution.py
+  Estado: FALLIDO
+  Resultado brute: 98.4
+  Resultado efficient: 65.2
+  Diferencia: 33.200000
+
+Caso 35:
+  Archivo: test_case_35_solution.py
+  Estado: FALLIDO
+  Resultado brute: 36.2
+  Resultado efficient: 34.4
+  Diferencia: 1.800000
+
+Caso 36:
+  Archivo: test_case_36_solution.py
+  Estado: FALLIDO
+  Resultado brute: 58.89999999999999
+  Resultado efficient: 51.8
+  Diferencia: 7.100000
+
+Caso 37:
+  Archivo: test_case_37_solution.py
+  Estado: PASADO
+  Resultado brute: 42.0
+  Resultado efficient: 42.0
+
+Caso 38:
+  Archivo: test_case_38_solution.py
+  Estado: PASADO
+  Resultado brute: 25.1
+  Resultado efficient: 25.1
+
+Caso 39:
+  Archivo: test_case_39_solution.py
+  Estado: PASADO
+  Resultado brute: 100.8
+  Resultado efficient: 100.8
+
+Caso 40:
+  Archivo: test_case_40_solution.py
+  Estado: PASADO
+  Resultado brute: 42.6
+  Resultado efficient: 42.6
+
+Caso 41:
+  Archivo: test_case_41_solution.py
+  Estado: FALLIDO
+  Resultado brute: 86.0
+  Resultado efficient: 45.8
+  Diferencia: 40.200000
+
+Caso 42:
+  Archivo: test_case_42_solution.py
+  Estado: FALLIDO
+  Resultado brute: 74.4
+  Resultado efficient: 52.99999999999999
+  Diferencia: 21.400000
+
+Caso 43:
+  Archivo: test_case_43_solution.py
+  Estado: FALLIDO
+  Resultado brute: 26.700000000000003
+  Resultado efficient: 18.0
+  Diferencia: 8.700000
+
+Caso 44:
+  Archivo: test_case_44_solution.py
+  Estado: PASADO
+  Resultado brute: 27.3
+  Resultado efficient: 27.3
+
+Caso 45:
+  Archivo: test_case_45_solution.py
+  Estado: FALLIDO
+  Resultado brute: 121.5
+  Resultado efficient: 90.29999999999998
+  Diferencia: 31.200000
+
+Caso 46:
+  Archivo: test_case_46_solution.py
+  Estado: PASADO
+  Resultado brute: 43.7
+  Resultado efficient: 43.7
+
+Caso 47:
+  Archivo: test_case_47_solution.py
+  Estado: PASADO
+  Resultado brute: 71.2
+  Resultado efficient: 71.2
+
+Caso 48:
+  Archivo: test_case_48_solution.py
+  Estado: FALLIDO
+  Resultado brute: 66.7
+  Resultado efficient: 48.6
+  Diferencia: 18.100000
+
+Caso 49:
+  Archivo: test_case_49_solution.py
+  Estado: PASADO
+  Resultado brute: 40.3
+  Resultado efficient: 40.3
+
+Caso 50:
+  Archivo: test_case_50_solution.py
+  Estado: PASADO
+  Resultado brute: 50.3
+  Resultado efficient: 50.3
+
+Caso 51:
+  Archivo: test_case_51_solution.py
+  Estado: PASADO
+  Resultado brute: 13.9
+  Resultado efficient: 13.9
+
+Caso 52:
+  Archivo: test_case_52_solution.py
+  Estado: FALLIDO
+  Resultado brute: 123.8
+  Resultado efficient: 102.89999999999999
+  Diferencia: 20.900000
+
+Caso 53:
+  Archivo: test_case_53_solution.py
+  Estado: PASADO
+  Resultado brute: 51.5
+  Resultado efficient: 51.5
+
+Caso 54:
+  Archivo: test_case_54_solution.py
+  Estado: PASADO
+  Resultado brute: 45.50000000000001
+  Resultado efficient: 45.50000000000001
+
+Caso 55:
+  Archivo: test_case_55_solution.py
+  Estado: PASADO
+  Resultado brute: 45.1
+  Resultado efficient: 45.1
+
+Caso 56:
+  Archivo: test_case_56_solution.py
+  Estado: PASADO
+  Resultado brute: 57.50000000000001
+  Resultado efficient: 57.50000000000001
+
+Caso 57:
+  Archivo: test_case_57_solution.py
+  Estado: PASADO
+  Resultado brute: 18.4
+  Resultado efficient: 18.4
+
+Caso 58:
+  Archivo: test_case_58_solution.py
+  Estado: PASADO
+  Resultado brute: 15.500000000000002
+  Resultado efficient: 15.500000000000002
+
+Caso 59:
+  Archivo: test_case_59_solution.py
+  Estado: PASADO
+  Resultado brute: 21.499999999999996
+  Resultado efficient: 21.499999999999996
+
+Caso 60:
+  Archivo: test_case_60_solution.py
+  Estado: PASADO
+  Resultado brute: 25.1
+  Resultado efficient: 25.1
+
+Caso 61:
+  Archivo: test_case_61_solution.py
+  Estado: FALLIDO
+  Resultado brute: 66.1
+  Resultado efficient: 53.30000000000001
+  Diferencia: 12.800000
+
+Caso 62:
+  Archivo: test_case_62_solution.py
+  Estado: PASADO
+  Resultado brute: 35.3
+  Resultado efficient: 35.3
+
+Caso 63:
+  Archivo: test_case_63_solution.py
+  Estado: FALLIDO
+  Resultado brute: 80.79999999999998
+  Resultado efficient: 76.6
+  Diferencia: 4.200000
+
+Caso 64:
+  Archivo: test_case_64_solution.py
+  Estado: FALLIDO
+  Resultado brute: 70.0
+  Resultado efficient: 63.599999999999994
+  Diferencia: 6.400000
+
+Caso 65:
+  Archivo: test_case_65_solution.py
+  Estado: FALLIDO
+  Resultado brute: 60.0
+  Resultado efficient: 51.10000000000001
+  Diferencia: 8.900000
+
+Caso 66:
+  Archivo: test_case_66_solution.py
+  Estado: PASADO
+  Resultado brute: 25.0
+  Resultado efficient: 25.0
+
+Caso 67:
+  Archivo: test_case_67_solution.py
+  Estado: FALLIDO
+  Resultado brute: 30.8
+  Resultado efficient: 29.8
+  Diferencia: 1.000000
+
+Caso 68:
+  Archivo: test_case_68_solution.py
+  Estado: PASADO
+  Resultado brute: 18.8
+  Resultado efficient: 18.8
+
+Caso 69:
+  Archivo: test_case_69_solution.py
+  Estado: PASADO
+  Resultado brute: 72.0
+  Resultado efficient: 72.0
+
+Caso 70:
+  Archivo: test_case_70_solution.py
+  Estado: PASADO
+  Resultado brute: 38.400000000000006
+  Resultado efficient: 38.400000000000006
+
+Caso 71:
+  Archivo: test_case_71_solution.py
+  Estado: PASADO
+  Resultado brute: 42.2
+  Resultado efficient: 42.2
+
+Caso 72:
+  Archivo: test_case_72_solution.py
+  Estado: FALLIDO
+  Resultado brute: 49.599999999999994
+  Resultado efficient: 46.2
+  Diferencia: 3.400000
+
+Caso 73:
+  Archivo: test_case_73_solution.py
+  Estado: FALLIDO
+  Resultado brute: 126.19999999999999
+  Resultado efficient: 110.19999999999999
+  Diferencia: 16.000000
+
+Caso 74:
+  Archivo: test_case_74_solution.py
+  Estado: PASADO
+  Resultado brute: 11.0
+  Resultado efficient: 11.0
+
+Caso 75:
+  Archivo: test_case_75_solution.py
+  Estado: PASADO
+  Resultado brute: 35.0
+  Resultado efficient: 35.0
+
+Caso 76:
+  Archivo: test_case_76_solution.py
+  Estado: FALLIDO
+  Resultado brute: 151.8
+  Resultado efficient: 110.2
+  Diferencia: 41.600000
+
+Caso 77:
+  Archivo: test_case_77_solution.py
+  Estado: FALLIDO
+  Resultado brute: 33.3
+  Resultado efficient: 19.1
+  Diferencia: 14.200000
+
+Caso 78:
+  Archivo: test_case_78_solution.py
+  Estado: FALLIDO
+  Resultado brute: 21.2
+  Resultado efficient: 5.699999999999999
+  Diferencia: 15.500000
+
+Caso 79:
+  Archivo: test_case_79_solution.py
+  Estado: PASADO
+  Resultado brute: 42.50000000000001
+  Resultado efficient: 42.50000000000001
+
+Caso 80:
+  Archivo: test_case_80_solution.py
+  Estado: PASADO
+  Resultado brute: 29.6
+  Resultado efficient: 29.6
+
+Caso 81:
+  Archivo: test_case_81_solution.py
+  Estado: PASADO
+  Resultado brute: 144.6
+  Resultado efficient: 144.6
+
+Caso 82:
+  Archivo: test_case_82_solution.py
+  Estado: FALLIDO
+  Resultado brute: 36.300000000000004
+  Resultado efficient: 34.1
+  Diferencia: 2.200000
+
+Caso 83:
+  Archivo: test_case_83_solution.py
+  Estado: PASADO
+  Resultado brute: 28.900000000000002
+  Resultado efficient: 28.900000000000002
+
+Caso 84:
+  Archivo: test_case_84_solution.py
+  Estado: PASADO
+  Resultado brute: 42.5
+  Resultado efficient: 42.5
+
+Caso 85:
+  Archivo: test_case_85_solution.py
+  Estado: FALLIDO
+  Resultado brute: 50.3
+  Resultado efficient: 41.199999999999996
+  Diferencia: 9.100000
+
+Caso 86:
+  Archivo: test_case_86_solution.py
+  Estado: PASADO
+  Resultado brute: 38.99999999999999
+  Resultado efficient: 38.99999999999999
+
+Caso 87:
+  Archivo: test_case_87_solution.py
+  Estado: PASADO
+  Resultado brute: 14.1
+  Resultado efficient: 14.1
+
+Caso 88:
+  Archivo: test_case_88_solution.py
+  Estado: FALLIDO
+  Resultado brute: 16.700000000000003
+  Resultado efficient: 14.9
+  Diferencia: 1.800000
+
+Caso 89:
+  Archivo: test_case_89_solution.py
+  Estado: PASADO
+  Resultado brute: 39.50000000000001
+  Resultado efficient: 39.50000000000001
+
+Caso 90:
+  Archivo: test_case_90_solution.py
+  Estado: PASADO
+  Resultado brute: 23.4
+  Resultado efficient: 23.4
+
+Caso 91:
+  Archivo: test_case_91_solution.py
+  Estado: PASADO
+  Resultado brute: 29.600000000000005
+  Resultado efficient: 29.600000000000005
+
+Caso 92:
+  Archivo: test_case_92_solution.py
+  Estado: PASADO
+  Resultado brute: 19.7
+  Resultado efficient: 19.7
+
+Caso 93:
+  Archivo: test_case_93_solution.py
+  Estado: PASADO
+  Resultado brute: 112.29999999999998
+  Resultado efficient: 112.29999999999998
+
+Caso 94:
+  Archivo: test_case_94_solution.py
+  Estado: FALLIDO
+  Resultado brute: 115.1
+  Resultado efficient: 108.49999999999999
+  Diferencia: 6.600000
+
+Caso 95:
+  Archivo: test_case_95_solution.py
+  Estado: PASADO
+  Resultado brute: 63.8
+  Resultado efficient: 63.8
+
+Caso 96:
+  Archivo: test_case_96_solution.py
+  Estado: FALLIDO
+  Resultado brute: 56.0
+  Resultado efficient: 40.599999999999994
+  Diferencia: 15.400000
+
+Caso 97:
+  Archivo: test_case_97_solution.py
+  Estado: PASADO
+  Resultado brute: 23.6
+  Resultado efficient: 23.6
+
+Caso 98:
+  Archivo: test_case_98_solution.py
+  Estado: PASADO
+  Resultado brute: 42.6
+  Resultado efficient: 42.6
+
+Caso 99:
+  Archivo: test_case_99_solution.py
+  Estado: PASADO
+  Resultado brute: 49.2
+  Resultado efficient: 49.2
+
+Caso 100:
+  Archivo: test_case_100_solution.py
+  Estado: FALLIDO
+  Resultado brute: 43.099999999999994
+  Resultado efficient: 42.0
+  Diferencia: 1.100000
+

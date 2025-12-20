@@ -225,7 +225,7 @@ def generate_solution_file(
         f.write("from pathlib import Path\n\n")
         
         f.write("# Configurar rutas de importación\n")
-        f.write("current_dir = Path(__file__).parent\n")
+        f.write("current_dir = Path(__file__).parent.parent\n")
         f.write("src_dir = current_dir.parent\n")
         f.write("solutions_dir = src_dir / 'solutions'\n")
         f.write("sys.path.insert(0, str(src_dir))\n")
@@ -284,9 +284,9 @@ def generate_solution_file(
         f.write("    print('\\\\nEjecutando algoritmo JAT...')\n")
         f.write("    try:\n")
         f.write("        result_JAT = solve_JAT(n, d, t_max, c_max, k_0, k_min, items_by_port)\n")
-        f.write("        print(f'Resultado JAT: {{result_JAT}}')\n")
+        f.write(f"        print(f'Resultado JAT: {{result_JAT}}')\n")
         f.write("    except Exception as e:\n")
-        f.write("        print(f'Error en JAT: {{e}}')\n")
+        f.write(f"        print(f'Error en JAT: {{e}}')\n")
         f.write("        import traceback\n")
         f.write("        traceback.print_exc()\n")
         f.write("        result_JAT = None\n")
@@ -298,9 +298,9 @@ def generate_solution_file(
         f.write("    print('\\\\nEjecutando algoritmo CHP...')\n")
         f.write("    try:\n")
         f.write("        result_CHP = solve_CHP(n, d, t_max, c_max, k_0, k_min, items_by_port)\n")
-        f.write("        print(f'Resultado CHP: {{result_CHP}}')\n")
+        f.write(f"        print(f'Resultado CHP: {{result_CHP}}')\n")
         f.write("    except Exception as e:\n")
-        f.write("        print(f'Error en CHP: {{e}}')\n")
+        f.write(f"        print(f'Error en CHP: {{e}}')\n")
         f.write("        import traceback\n")
         f.write("        traceback.print_exc()\n")
         f.write("        result_CHP = None\n")
@@ -313,14 +313,14 @@ def generate_solution_file(
         f.write("    if result_JAT == -1 and result_CHP == -1:\n")
         f.write("        print(f'\\\\n[OK] Ambos algoritmos retornan -1 (sin solución)')\n")
         f.write("    elif abs(result_JAT - result_CHP) < 0.01:\n")
-        f.write("        print(f'\\\\n[OK] Los resultados coinciden: {{result_JAT:.2f}}')\n")
+        f.write(f"        print(f'\\\\n[OK] Los resultados coinciden: {{result_JAT:.2f}}')\n")
         f.write("    else:\n")
-        f.write("        print(f'\\\\n[ERROR] Los resultados difieren: JAT={{result_JAT:.2f}}, CHP={{result_CHP:.2f}}')\n")
-        f.write("        print(f'         Diferencia: {{abs(result_JAT - result_CHP):.2f}}')\n")
+        f.write(f"        print(f'\\\\n[ERROR] Los resultados difieren: JAT={{result_JAT:.2f}}, CHP={{result_CHP:.2f}}')\n")
+        f.write(f"        print(f'         Diferencia: {{abs(result_JAT - result_CHP):.2f}}')\n")
         f.write("elif result_JAT is not None:\n")
-        f.write("    print(f'\\\\n[Solo JAT] Resultado: {{result_JAT:.2f}}')\n")
+        f.write(f"    print(f'\\\\n[Solo JAT] Resultado: {{result_JAT:.2f}}')\n")
         f.write("elif result_CHP is not None:\n")
-        f.write("    print(f'\\\\n[Solo CHP] Resultado: {{result_CHP:.2f}}')\n")
+        f.write(f"    print(f'\\\\n[Solo CHP] Resultado: {{result_CHP:.2f}}')\n")
         f.write("else:\n")
         f.write("    print('\\\\n[Error] Ningún algoritmo disponible o todos fallaron')\n")
 
@@ -333,7 +333,14 @@ def create_init_file(directory: Path):
         f.write("__version__ = '1.0.0'\n")
         f.write("__author__ = 'Generador de Casos'\n")
 
-def generate_test_cases(num_cases: int = 5, output_dir: str = "test_cases"):
+def generate_test_cases(
+    num_cases=5,
+    output_dir="test_cases",
+    min_ports=3,
+    max_ports=5,
+    min_items=2,
+    max_items=4, 
+):
     """Genera múltiples casos de prueba y los guarda en archivos."""
     # Crear directorio si no existe
     output_path = Path(__file__).parent / output_dir
@@ -349,10 +356,10 @@ def generate_test_cases(num_cases: int = 5, output_dir: str = "test_cases"):
         
         # Generar instancia con m constante para todos los puertos
         instance = generate_random_instance(
-            min_ports=3,
-            max_ports=5,
-            min_items=2,  # Mínimo 2 tipos de mercancías
-            max_items=4,  # Máximo 4 tipos de mercancías
+            min_ports=min_ports,
+            max_ports=max_ports,
+            min_items=min_items,  # Mínimo 2 tipos de mercancías
+            max_items=max_items,  # Máximo 4 tipos de mercancías
             seed=i
         )
         
@@ -367,16 +374,44 @@ def generate_test_cases(num_cases: int = 5, output_dir: str = "test_cases"):
     print(f"\n✓ Generados {num_cases} casos de prueba en '{output_dir}/'")
     print(f"  Cada puerto tiene exactamente m tipos de mercancías (m constante)")
     
+
+def parse_arguments(args):
+    """Convierte argumentos de formato clave=valor en un diccionario."""
+    params = {}
+    for arg in args:
+        if '=' in arg:
+            key, value = arg.split('=', 1)
+            params[key] = value
+    return params
+
+    
 # Función principal para ejecutar desde la línea de comandos
 def main():
     """Función principal del generador."""
+    params = parse_arguments(sys.argv[1:])
+    
+    # Extraer valores con defaults opcionales
+    dir = params.get('dir', 'test_cases')
+    num_cases = int(params.get('num_cases', 100))
+    min_ports = int(params.get('min_ports', 3))
+    max_ports = int(params.get('max_ports', 5))
+    min_items = int(params.get('min_items', 2))
+    max_items = int(params.get('max_items', 4))
+        
     print("="*70)
     print("GENERADOR DE CASOS DE PRUEBA - COMPAÑÍA HOLANDESA")
     print("="*70)
     
     # Generar múltiples casos de prueba
     print("\n1. Generando casos de prueba para validación...")
-    generate_test_cases(num_cases=100, output_dir="test_cases")
+    generate_test_cases(
+        num_cases=num_cases,
+        output_dir=dir,
+        min_ports=min_ports,
+        max_ports=max_ports,
+        min_items=min_items,
+        max_items=max_items
+    )
     
     print("\n" + "="*70)
     print("INSTRUCCIONES DE USO:")

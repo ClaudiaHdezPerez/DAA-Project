@@ -52,29 +52,27 @@ def solve(
             
             if next_port is None:
                 break
-            
-            # Viajar al siguiente puerto
-            travel_time = d[state.current_port][next_port]
-            if state.time + travel_time > t_max:
-                break
-            
+                        
             # Comprar mercancías prometedoras
             state = buy_in_current_port(state, items_by_port, next_port)
-                                        
-            state.time += travel_time
+            
+            if state.capital < k_min:
+                break
+
+            state.capital -= k_min                                
+            state.time += d[state.current_port][next_port]
             state.current_port = next_port
             state.route.append(next_port)
             unvisited.remove(next_port)
         
         # Regresar a Amsterdam si es posible
-        travel_back = d[state.current_port][0]
-        if state.time + travel_back <= t_max:
+        if state.current_port != 0:
+            travel_back = d[state.current_port][0]
             state.time += travel_back
+            state.capital -= k_min
             state.current_port = 0
             state.route.append(0)
-        
-        # Vender todo en Amsterdam
-        state = sell_all_in_amsterdam(state, items_by_port)
+            state = sell_all_in_amsterdam(state, items_by_port)
         
         return state
     
@@ -136,8 +134,7 @@ def solve(
                 )
                 available_capacity -= weight
                 available_capital -= buy_price
-        
-        new_state.capital -= k_min
+
         return new_state
     
     def select_next_port_greedy(state: State, unvisited: Set[int], 
@@ -149,7 +146,7 @@ def solve(
         
         for port in unvisited:
             travel_time = d[current][port]
-            time_back = d[port][0] if port != 0 else 0
+            time_back = d[port][0]
             total_time = state.time + travel_time + time_back
             
             if total_time <= t_max:
@@ -183,14 +180,9 @@ def solve(
     def evaluate_state(state: State, items_by_port: List[List[Item]]) -> float:
         """Evalúa un estado (capital final después de vender en Amsterdam)."""
         # Primero simular venta de todo en Amsterdam
-        total_capital = state.capital
+        new_state = sell_all_in_amsterdam(state, items_by_port)
         
-        for merch in state.inventory:
-            i, k, w, buy_price = merch
-            sell_price = items_by_port[0][k].sell_price if k < len(items_by_port[0]) else 0
-            total_capital += sell_price
-        
-        return total_capital
+        return new_state.capital
     
     def simulate_route(route: List[int], d: List[List[float]], 
                       items_by_port: List[List[Item]]) -> Optional[State]:
@@ -202,19 +194,15 @@ def solve(
                      used_capacity=0.0, route=[0], inventory=[])
         
         for i in range(1, len(route)):
+            # Vender
+            state = sell_in_current_port(state, items_by_port)
+
             next_port = route[i]
             travel_time = d[state.current_port][next_port]
             
             # Verificar tiempo
             if state.time + travel_time > t_max:
                 return None
-            
-            # Viajar
-            state.time += travel_time
-            state.current_port = next_port
-            
-            # Vender
-            state = sell_in_current_port(state, items_by_port)
             
             # Comprar
             state = buy_in_current_port(state, items_by_port, next_port)
@@ -223,17 +211,11 @@ def solve(
             if state.capital < 0 or state.used_capacity > c_max:
                 return None
             
-            # Actualizar ruta
+            # Viajar
+            state.time += travel_time
+            state.current_port = next_port
+            state.capital -= k_min
             state.route.append(next_port)
-        
-        # Regresar a Amsterdam si no estamos ya allí
-        if state.current_port != 0:
-            travel_back = d[state.current_port][0]
-            if state.time + travel_back > t_max:
-                return None
-            state.time += travel_back
-            state.current_port = 0
-            state.route.append(0)
         
         # Vender todo en Amsterdam
         state = sell_all_in_amsterdam(state, items_by_port)
@@ -244,11 +226,11 @@ def solve(
         """Genera una ruta vecina modificando la ruta actual."""
         route = state.route.copy()
         
-        if len(route) <= 3:  # Solo Amsterdam + 1 puerto + Amsterdam
+        if len(route) == 3:  # Solo Amsterdam + 1 puerto + Amsterdam
             # Insertar un puerto aleatorio
             available = [p for p in range(1, n) if p not in route]
             if available:
-                insert_pos = random.randint(1, len(route)-1)
+                insert_pos = random.randint(1, len(route)-2)
                 insert_port = random.choice(available)
                 route.insert(insert_pos, insert_port)
             return route
@@ -267,15 +249,14 @@ def solve(
             visited = set(route)
             available = [p for p in range(1, n) if p not in visited]
             if available:
-                insert_pos = random.randint(1, len(route)-1)
+                insert_pos = random.randint(1, len(route)-2)
                 insert_port = random.choice(available)
                 route.insert(insert_pos, insert_port)
         
         elif operation == 'remove':
             # Remover un puerto (no Amsterdam)
-            if len(route) > 3:
-                remove_pos = random.randint(1, len(route)-2)
-                route.pop(remove_pos)
+            remove_pos = random.randint(1, len(route)-2)
+            route.pop(remove_pos)
         
         elif operation == 'reverse':
             # Invertir un segmento
@@ -283,23 +264,11 @@ def solve(
             j = random.randint(i, len(route)-2)
             route[i:j+1] = reversed(route[i:j+1])
         
-        # Asegurar que empieza y termina en Amsterdam
-        if route[0] != 0:
-            route.insert(0, 0)
-        if route[-1] != 0:
-            route.append(0)
-        
-        # Eliminar Amsterdams consecutivos
-        cleaned_route = [route[0]]
-        for i in range(1, len(route)):
-            if not (route[i] == 0 and route[i-1] == 0):
-                cleaned_route.append(route[i])
-        
-        return cleaned_route
+        return route
     
     def simulated_annealing(initial_state: State, max_iter: int = 3000) -> State:
         """Algoritmo de Simulated Annealing para mejorar la solución."""
-        current_state = initial_state
+        current_state = initial_state        
         best_state = initial_state.copy()
         current_value = evaluate_state(current_state, items_by_port)
         best_value = current_value
@@ -307,7 +276,7 @@ def solve(
         temperature = 1000.0
         cooling_rate = 0.995
         
-        for iteration in range(max_iter):
+        for _ in range(max_iter):
             # Generar vecino
             new_route = generate_neighbor(current_state)
             new_state = simulate_route(new_route, d, items_by_port)
@@ -330,15 +299,14 @@ def solve(
             
             # Enfriar
             temperature *= cooling_rate
-            
-            # Reinicio ocasional
-            if iteration % 500 == 0 and temperature < 10:
-                temperature = 100.0
         
         return best_state
     
     initial_state = greedy_initial_solution()
+    if len(initial_state.route) == 1:
+        return initial_state.capital
+
     best_state = simulated_annealing(initial_state, max_iter=2000)
     final_capital = evaluate_state(best_state, items_by_port)
     
-    return final_capital
+    return max(final_capital, k_0)

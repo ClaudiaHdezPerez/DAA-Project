@@ -187,4 +187,587 @@ Dada una instancia de \textbf{TSP}, se construye una instancia del problema de l
 
 La reducción es ejecutable en tiempo polinomial y dado que \textbf{TSP} se reduce al problema, concluimos que es \textbf{NP-Completo}.
 
+\section{Diseño de soluciones algorítmicas}
+
+Para resolver el problema, se han diseñado dos soluciones por fuerza bruta y una solución eficiente que combina un algoritmo voraz (\textit{greedy}) con metaheurística (\textit{simulate annealing}). Todas tienen las mismas entradas, emplean las mismas estructuras de datos y producen una salida.
+
+\subsection{Entradas}
+\begin{itemize}
+    \item $n$: número de puertos.
+    \item $d[i][j]$: matriz de distancias entre puertos ($d_{ij}$).
+    \item $T_{\max}$: tiempo máximo permitido para viajar.
+    \item $C_{\max}$: capacidad máxima de carga del barco.
+    \item $K_0$: capital inicial disponible.
+    \item $K_{\min}$: capital mínimo requerido en todo momento.
+    \item $M_i$: conjunto de ítems disponibles en el puerto $i$, cada uno con:
+    \begin{itemize}
+        \item $w_{ik}$: peso del ítem $k$ en el puerto $i$.
+        \item $p_{ik}^{buy}$: precio de compra del ítem.
+        \item $p_{ik}^{sell}$: precio de venta del ítem.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Salida}
+\begin{itemize}
+    \item Ganancia máxima obtenida tras visitar los puertos, comprar y vender ítems,
+          respetando las restricciones de tiempo y capacidad.
+\end{itemize}
+
+\subsection{Estructuras de datos utilizadas}
+\begin{itemize}
+    \item \textbf{Item}: representa un ítem disponible en un puerto. Contiene:
+    \begin{itemize}
+        \item $w$: peso del ítem ($w_{ik}$).
+        \item $buy\_price$: precio de compra ($p_{ik}^{buy}$).
+        \item $sell\_price$: precio de venta ($p_{ik}^{sell}$).
+    \end{itemize}
+    \item \textbf{Merchandise}: representa una mercancía que ya ha sido comprada y está a bordo. Contiene:
+    \begin{itemize}
+        \item $i$: puerto en el que fue adquirida.
+        \item $k$: índice del ítem en ese puerto.
+        \item $w$: peso de la mercancía.
+        \item $buy\_price$: precio de compra pagado.
+    \end{itemize}
+    \item \textbf{itemsByPort}: matriz de dimensión $n \times m$ que contiene los ítems disponibles en cada puerto.
+    \begin{itemize}
+        \item $n$: número de puertos.
+        \item $m$: número de ítems por puerto (se asume igual en todos los puertos por comodidad).
+        \item La ausencia de un ítem se representa como un objeto \texttt{Item} con:
+        \begin{itemize}
+            \item peso $w = \infty$,
+            \item precio de compra $p^{buy} = \infty$,
+            \item precio de venta $p^{sell} = -\infty$.
+        \end{itemize}
+    \end{itemize}
+    \item \textbf{State}: representa el estado completo del comerciante en un momento dado de la simulación. Contiene:
+    \begin{itemize}
+        \item $current\_port$: puerto actual en el que se encuentra.
+        \item $capital$: capital disponible en ese instante.
+        \item $time$: tiempo acumulado de viaje y operaciones.
+        \item $used\_capacity$: capacidad de carga utilizada en el barco.
+        \item $route$: lista de puertos visitados en orden.
+        \item $inventory$: lista de mercancías (\texttt{Merchandise}) que están actualmente a bordo.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Descripción de las soluciones}
+
+El \hyperref[alg:jat]{Algoritmo 1} es una de las implementaciones de fuerza bruta, que se describe a continuación.
+
+\paragraph{Descripción del flujo del algoritmo.}
+El algoritmo comienza en la función \textbf{Solve}, que inicializa el estado de los puertos visitados y llama a la función \textbf{Buy} para explorar las decisiones iniciales de compra. 
+
+La función \textbf{Buy} evalúa, en cada puerto, si es posible adquirir una mercancía dadas las restricciones de capital mínimo y capacidad de carga. Si la compra es viable, la mercancía se añade temporalmente a la carga y se realiza una llamada recursiva para continuar explorando. También se contempla la opción de no comprar y avanzar al siguiente ítem. En todo momento se compara la ganancia obtenida por comprar con la ganancia de viajar directamente (\textbf{Travel}).
+
+La función \textbf{Sell} se encarga de explorar las posibles ventas de las mercancías que están a bordo en un puerto dado. Para cada mercancía se considera la opción de venderla o mantenerla, actualizando el capital y la capacidad, y llamando recursivamente a sí misma para evaluar el resto de mercancías. El resultado es la mejor ganancia entre vender y no vender.
+
+La función \textbf{Travel} evalúa la posibilidad de desplazarse a otros puertos no visitados, siempre que el tiempo restante lo permita. Marca el puerto como visitado, llama a \textbf{Sell} para explorar las transacciones en ese puerto, y luego desmarca el puerto para permitir otras rutas. El valor devuelto es la máxima ganancia alcanzable considerando todas las rutas posibles.
+
+En conjunto, el flujo del algoritmo es una búsqueda exhaustiva recursiva que combina decisiones de compra, venta y viaje, manteniendo en todo momento las restricciones de tiempo, capacidad y capital mínimo.
+
+\paragraph{Correctitud.}
+El algoritmo es correcto porque explora todas las combinaciones posibles de decisiones (comprar, vender, viajar o no hacerlo) y siempre mantiene las restricciones globales. Al devolver el máximo entre las ganancias obtenidas en cada rama de decisión, garantiza que el resultado final corresponde a la mejor estrategia posible. La recursividad asegura que no se omite ninguna ruta ni combinación de transacciones.
+
+\paragraph{Complejidad Temporal} El algoritmo explora todas las posibles rutas que comienzan en Ámsterdam y regresan dentro del tiempo máximo permitido. La clave está en que no basta con elegir un subconjunto de puertos: también importa el \textbf{orden en que se visitan}. Por eso, lo que se explora son 
+\textbf{variaciones sin repetición}: todas las secuencias posibles de longitud $k$ tomadas de $n$ puertos. El número de secuencias de longitud $k$ es: \[ P(n,k) = \frac{n!}{(n-k)!}. \] Dado que el algoritmo permite rutas de cualquier longitud $k$ (desde $0$ hasta $n$), el total de rutas posibles es: \[ \sum_{k=0}^{n} P(n,k). \] Esta sumatoria es del orden de $n!$ (tiende a $e \cdot n!$). En general: 
+
+\begin{itemize} 
+    \item Exploración de rutas: $\Theta(n!)$, por el orden de visita de los puertos. 
+    \item Decisiones de compra/venta: $\Theta(2^m)$ por puerto, ya que cada ítem puede comprarse/venderse o no. 
+    \item Complejidad Total: \[ O(n! \cdot 2^m). \] 
+\end{itemize}
+
+lo que lo hace impracticable para instancias grandes. Sin embargo, es útil como referencia exacta para instancias pequeñas y como base para comparar heurísticas.
+
+\
+
+El \hyperref[alg:chp]{Algoritmo 2} es otra implementación de fuerza bruta, que se describe a continuación.
+
+\paragraph{Descripción del flujo del algoritmo.}
+El algoritmo comienza en la función \textbf{Solve}, que prepara las estructuras iniciales y llama a la función interna \textbf{\_Solve}. 
+Esta función recursiva construye rutas posibles desde Ámsterdam, explorando todos los puertos alcanzables dentro del tiempo máximo $T_{\max}$. 
+Cada vez que se regresa al puerto inicial, se evalúa la ruta completa mediante la función \textbf{\_ProfitByRoute}.
+
+La función \textbf{\_ProfitByRoute} calcula la ganancia máxima posible siguiendo la secuencia de puertos de la ruta. 
+En cada puerto se consideran todas las combinaciones de ventas (\textbf{\_Sell}) de las mercancías a bordo y todas las combinaciones de compras (\textbf{\_Buy}) de las mercancías disponibles en el puerto. 
+Después de aplicar las decisiones de compra y venta, se actualizan las cargas y se continúa recursivamente hacia el siguiente puerto de la ruta. 
+La función \textbf{\_SellAll} se utiliza para liquidar todas las mercancías al final del viaje, y \textbf{\_CalculateWeight} asegura que las restricciones de capacidad se respeten.
+
+En conjunto, el flujo del algoritmo es una búsqueda exhaustiva que combina la exploración de rutas posibles con la evaluación de todas las combinaciones de compra y venta en cada puerto, manteniendo las restricciones de tiempo, capacidad y capital mínimo.
+
+\paragraph{Correctitud.}
+El algoritmo es correcto porque explora todas las rutas factibles que comienzan y terminan en Ámsterdam dentro del tiempo máximo, y para cada ruta considera exhaustivamente todas las combinaciones de compra y venta de mercancías. 
+Al devolver siempre el máximo entre las ganancias obtenidas en cada rama de decisión, garantiza que el resultado final corresponde a la mejor estrategia posible. 
+La recursividad asegura que no se omite ninguna ruta ni ninguna combinación de transacciones.
+
+\paragraph{Complejidad Temporal.}
+El algoritmo explora todas las posibles rutas de longitud variable que comienzan en Ámsterdam y regresan dentro del tiempo máximo permitido. 
+No basta con elegir un subconjunto de puertos: también importa el \textbf{orden en que se visitan}. 
+Por eso, lo que se explora son \textbf{variaciones sin repetición}: todas las secuencias posibles de longitud $k$ tomadas de $n$ puertos. 
+El número de secuencias de longitud $k$ es:
+
+
+\[
+P(n,k) = \frac{n!}{(n-k)!}.
+\]
+
+
+Dado que el algoritmo permite rutas de cualquier longitud $k$ (desde $0$ hasta $n$), el total de rutas posibles es:
+
+
+\[
+\sum_{k=0}^{n} P(n,k).
+\]
+
+
+Esta sumatoria es del orden de $n!$ (tiende a $e \cdot n!$).
+
+En cuanto a las decisiones de compra y venta, en cada puerto se exploran todos los subconjuntos de mercancías a bordo para vender ($2^{|L|}$ posibilidades) y todos los subconjuntos de mercancías disponibles para comprar ($2^m$ posibilidades). 
+En el peor caso, $|L| \leq m$, por lo que el espacio de decisiones por puerto es $O(4^m)$.
+
+\begin{itemize}
+    \item Exploración de rutas: $\Theta(n!)$, por el orden de visita de los puertos.
+    \item Decisiones de compra/venta: $O(4^m)$ por puerto, considerando todas las combinaciones de venta y compra.
+    \item Complejidad Total: 
+    
+
+\[
+    O(n! \cdot 4^m).
+    \]
+
+
+\end{itemize}
+
+Esto lo hace impracticable para instancias grandes, pero útil como referencia exacta para instancias pequeñas y como base para comparar heurísticas.
+
+\
+
+El \hyperref[alg:ef]{Algoritmo 3} es una implementación aproximada que combina una solución inicial \textit{greedy} con el método de \textit{Simulated Annealing}, y se describe a continuación.
+
+\paragraph{Descripción del flujo del algoritmo.}
+El algoritmo comienza en la función \textbf{Solve}, que genera una solución inicial mediante la función \textbf{GreedyInitialSolution}. Esta solución se construye recorriendo los puertos de manera heurística, vendiendo y comprando mercancías según convenga, y asegurando que se pueda regresar a Ámsterdam dentro del tiempo máximo permitido.
+
+La función \textbf{GreedyInitialSolution} utiliza tres funciones auxiliares: 
+\begin{itemize}
+    \item \textbf{SellInCurrentPort}: vende las mercancías en el puerto actual si el precio de venta es mayor que el de compra.
+    \item \textbf{BuyInCurrentPort}: selecciona mercancías prometedoras en el puerto actual usando una heurística tipo mochila 0/1, priorizando la relación ganancia/peso.
+    \item \textbf{SelectNextPortGreedy}: elige el próximo puerto a visitar en función de una puntuación heurística que combina distancia y cantidad de ítems disponibles.
+\end{itemize}
+
+Al finalizar la ruta \textit{greedy}, la función \textbf{SellAllInAmsterdam} liquida todo el inventario en el puerto inicial para calcular el capital final de la solución inicial.
+
+Una vez obtenida la solución inicial, la función \textbf{SimulatedAnnealing} se encarga de mejorarla. Este procedimiento mantiene un estado actual y un estado óptimo encontrado hasta el momento. En cada iteración:
+\begin{itemize}
+    \item Se genera una ruta vecina mediante \textbf{GenerateNeighbor}, que modifica la ruta actual aplicando operaciones como intercambio, inserción, eliminación o inversión de segmentos.
+    \item La ruta vecina se evalúa con \textbf{SimulateRoute}, que simula el recorrido completo aplicando las funciones de compra y venta en cada puerto y verificando las restricciones de capacidad y capital.
+    \item El capital final de la ruta simulada se calcula con \textbf{EvaluateState}, que vende todo el inventario en Ámsterdam.
+    \item El criterio de aceptación de \textbf{SimulatedAnnealing} permite aceptar soluciones peores con cierta probabilidad dependiente de la temperatura, lo que ayuda a escapar de óptimos locales.
+\end{itemize}
+
+El proceso de enfriamiento reduce gradualmente la temperatura, haciendo que el algoritmo se vuelva más estricto en la aceptación de soluciones. Al finalizar las iteraciones, se devuelve el mejor estado encontrado.
+
+En conjunto, el flujo del algoritmo combina una construcción inicial \textit{greedy} con una búsqueda aproximada basada en \textit{Simulated Annealing}, explorando rutas vecinas y evaluando las decisiones de compra y venta de mercancías para aproximarse a una solución de alta calidad.
+
+\newpage
+\section*{\LARGE{Anexos}}
+
+\begin{algorithm}
+\caption{Fuerza Bruta. Joel Aaparicio Tamayo}\label{alg:jat}
+\end{algorithm}
+\begin{algorithmic}[1]
+
+\STATE \textbf{Function} Solve($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, itemsByPort$)
+\STATE Initialize $portsVisited \gets$ list of \texttt{False}
+\STATE $portsVisited[0] \gets$ \texttt{True}
+\STATE $m \gets$ number of items at port 0
+\STATE \textbf{return} $\max(K_0, Buy(n, d, T_{\max}, C_{\max}, K_0, K_{\min}, m,$
+\STATE \hspace{1cm} $itemsByPort, 0, \text{[ ]}, portsVisited, 0))$
+
+\STATE
+
+\STATE \textbf{Function} Sell($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, size,$
+\STATE \hspace{1cm} $itemsByPort, port, itemsOnBoard, portsVisited, j$)
+\STATE $purchaseGain \gets Buy(...)$
+\IF{$j \geq$ length of $itemsOnBoard$}
+    \STATE \textbf{return} $purchaseGain$
+\ENDIF
+\IF{$itemsOnBoard$ not empty}
+    \STATE Remove item $m$ at position $j$
+    \STATE $sellPrice \gets itemsByPort[port][m.k].sellPrice$
+    \STATE $sellGain \gets Sell(...)$ with updated capital and capacity
+    \STATE Reinsert item $m$
+    \STATE $sellGain \gets \max(sellGain, Sell(..., j+1))$
+\ENDIF
+\STATE \textbf{return} $\max(purchaseGain, sellGain)$
+
+\STATE
+
+\STATE \textbf{Function} Buy($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, size,$
+\STATE \hspace{1cm} $itemsByPort, port, itemsOnBoard, portsVisited, j$)
+\STATE $travelGain \gets K_0$
+\IF{$K_{\min} > travelGain$}
+    \STATE \textbf{return} $-1$
+\ENDIF
+\STATE $travelGain \gets Travel(...)$
+\IF{$j \geq size$}
+    \STATE \textbf{return} $travelGain$
+\ENDIF
+\IF{$K_{\min} \leq funds$ \AND $capacityLeft \geq 0$}
+    \STATE Append to $itemsOnBoard$: Merchandise($i=port,$ $k=j,$
+    \STATE \hspace{1cm} $w=currentItem.w,$
+    $buyPrice=currentItem.buyPrice$)
+    \STATE $purchase \gets Buy(...,  j+1)$ with updated capital and capacity
+    \STATE Remove last item from $itemsOnBoard$ 
+\ENDIF
+\STATE $purchase \gets max(purchase, Buy(..., j + 1))$ with current capital and capacity
+\STATE \textbf{return} $\max(purchase, travelGain)$
+
+\STATE
+
+\STATE \textbf{Function} Travel($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, size,$
+\STATE \hspace{1cm} $itemsByPort, port, itemsOnBoard, portsVisited$)
+\STATE $finalGain \gets K_0 + \sum$ selling prices at initial port
+\STATE $maxGain \gets -1$
+\FOR{each port $i$}
+    \IF{not visited and enough time}
+        \STATE Mark port $i$ as visited
+        \STATE $nextGain \gets Sell(...)$ at port $i$
+        \STATE $maxGain \gets \max(maxGain, nextGain)$
+        \STATE Unmark port $i$
+    \ENDIF
+\ENDFOR
+\STATE \textbf{return} $maxGain$
+
+\end{algorithmic}
+
+\
+
+\begin{algorithm}
+\caption{Fuerza Bruta. Claudia Hernández Pérez}\label{alg:chp}
+\end{algorithm}
+\begin{algorithmic}[1]
+
+\STATE \textbf{Function} Solve($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, itemsByPort$)
+\STATE \textbf{return} \_Solve($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, itemsByPort,$
+\STATE \hspace{1cm} $0, K_0, [\texttt{False} \text{ for } i=1..n], \text{[ ]}$ $,[\text{[ ]} \text{ for } i=1..n]$)
+
+\STATE
+
+\STATE \textbf{Function} \_Solve($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, itemsByPort,$
+\STATE \hspace{1cm} $port_i, maxProfit, visited, route, L_i$)
+\IF{$port_i = 0$ \AND $visited[0] = \texttt{True}$}
+    \STATE Append $0$ to $route$
+    \STATE $maxProfit \gets \max(maxProfit,$ 
+    \STATE \hspace{1cm} \_ProfitByRoute($C_{\max}, K_0, K_{\min}, itemsByPort,$
+    \STATE \hspace{2cm} $route, L_i, 0, maxProfit$))
+    \STATE Remove last element from $route$
+    \STATE \textbf{return} $maxProfit$
+\ENDIF
+\STATE Append $port_i$ to $route$
+\FOR{each port $j$ in $0..n-1$}
+    \IF{$port_i \neq port_j$ \AND not $visited[j]$ \AND 
+    \STATE \hspace{1cm} $T_{\max} - (d[port_i][j] + d[j][0]) \geq 0$}
+        \STATE $visited[j] \gets \texttt{True}$
+        \STATE $maxProfit \gets \max(maxProfit,$ 
+        \STATE \hspace{1cm} \_Solve($n, d, T_{\max} - d[port_i][j], C_{\max}, K_0,$
+        \STATE \hspace{2cm} $K_{\min}, itemsByPort, j, maxProfit, visited, route, L_i$))
+        \STATE $visited[j] \gets \texttt{False}$
+    \ENDIF
+\ENDFOR
+\STATE Remove last element from $route$
+\STATE \textbf{return} $maxProfit$
+
+\STATE
+
+\STATE \textbf{Function} \_ProfitByRoute($C_{\max}, K_0, K_{\min}, itemsByPort,$
+\STATE \hspace{1cm} $route, L_i, i, maxProfit$)
+\IF{$K_0 < 0$}
+    \STATE \textbf{return} $-\infty$
+\ENDIF
+\STATE $port \gets route[i]$
+\IF{$i = |route|-1$}
+    \STATE \textbf{return} $K_0 +$ \_SellAll($L_i[port], itemsByPort[port]$)
+\ENDIF
+\FOR{each $sell$ in \_Sell($L_i[port], itemsByPort[port], \text{[ ]}, 0, \text{[ ]}$)}
+    \STATE $rest \gets L_i[port] \setminus sell[0]$
+    \STATE $sold \gets sell[0]$
+    \STATE $capacitySold \gets$ \_CalculateWeight($sold$)
+    \FOR{each $buy$ in \_Buy($port, itemsByPort[port], \text{[ ]}, 0, \text{[ ]},$
+    \STATE \hspace{1cm} $C_{\max}+capacitySold, K_0+sell[1]-K_{\min}$)}
+        \STATE $capacityBought \gets$ \_CalculateWeight($buy[0]$)
+        \STATE $L_i[route[i+1]] \gets rest + buy[0]$
+        \STATE $maxProfit \gets \max(maxProfit,$ 
+        \STATE \hspace{1cm} \_ProfitByRoute($C_{\max}+capacitySold-capacityBought,$
+        \STATE \hspace{2cm} $K_0+sell[1]-K_{\min}-buy[1], K_{\min},$
+        \STATE \hspace{2cm} $itemsByPort, route, L_i, i+1, maxProfit$))
+    \ENDFOR
+\ENDFOR
+\STATE \textbf{return} $maxProfit$
+
+\STATE
+
+\STATE \textbf{Function} \_Sell($goods, itemsAtPort, goodsSold, i, result$)
+\IF{$i = |goods|$}
+    \STATE $sold \gets \sum_{j \in goodsSold} itemsAtPort[j.k].sellPrice$
+    \STATE Append $(goodsSold, sold)$ to $result$
+    \STATE \textbf{return} $result$
+\ENDIF
+\STATE $merchandise \gets goods[i]$
+\STATE Append $merchandise$ to $goodsSold$
+\STATE \_Sell($goods, itemsAtPort, goodsSold, i+1, result$)
+\STATE Remove last element from $goodsSold$
+\STATE \_Sell($goods, itemsAtPort, goodsSold, i+1, result$)
+\STATE \textbf{return} $result$
+
+\STATE
+
+\STATE \textbf{Function} \_SellAll($goods, itemsAtPort$)
+\STATE \textbf{return} $\sum_{j \in goods} itemsAtPort[j.k].sellPrice$
+
+\STATE
+
+\STATE \textbf{Function} \_Buy($port, itemsAtPort, goodsSold, i, result, C_{\max}, K$)
+\IF{$i = |itemsAtPort|$}
+    \STATE $cost \gets \sum_{j \in goodsSold} j.buyPrice$
+    \STATE Append $(goodsSold, cost)$ to $result$
+    \STATE \textbf{return} $result$
+\ENDIF
+\STATE $merchandise \gets$ Merchandise($port, i, itemsAtPort[i].w,$
+\STATE \hspace{1cm} $itemsAtPort[i].buyPrice$)
+\IF{$C_{\max} - merchandise.w \geq 0$ \AND $K - merchandise.buyPrice \geq 0$}
+    \STATE Append $merchandise$ to $goodsSold$
+    \STATE \_Buy($port, itemsAtPort, goodsSold, i+1, result,$
+    \STATE \hspace{1cm} $C_{\max}-merchandise.w, K-merchandise.buyPrice$)
+    \STATE Remove last element from $goodsSold$
+\ENDIF
+\STATE \_Buy($port, itemsAtPort, goodsSold, i+1, result, C_{\max}, K$)
+\STATE \textbf{return} $result$
+
+\STATE
+
+\STATE \textbf{Function} \_CalculateWeight($goods$)
+\STATE \textbf{return} $\sum_{item \in goods} item.w$
+
+\end{algorithmic}
+
+\
+
+\begin{algorithm}
+\caption{Solución Eficiente}\label{alg:ef}
+\end{algorithm}
+\begin{algorithmic}[1]
+
+\STATE \textbf{Function} Solve($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, itemsByPort$)
+\STATE $initialState \gets$ GreedyInitialSolution()
+\IF{$|initialState.route| = 1$}
+    \STATE \textbf{return} $initialState.capital$
+\ENDIF
+\STATE $bestState \gets$ SimulatedAnnealing($initialState, maxIter=2000$)
+\STATE $finalCapital \gets$ EvaluateState($bestState, itemsByPort$)
+\STATE \textbf{return} $\max(finalCapital, K_0)$
+
+\STATE
+
+\STATE \textbf{Function} GreedyInitialSolution()
+\STATE $state \gets$ State($current\_port=0, capital=K_0, time=0,$
+\STATE \hspace{1cm} $usedCapacity=0, route=[0], inventory=\text{[ ]}$)
+\STATE $unvisited \gets \{1..n-1\}$
+\WHILE{$unvisited \neq \emptyset$}
+    \STATE $state \gets$ SellInCurrentPort($state, itemsByPort$)
+    \STATE $nextPort \gets$ SelectNextPortGreedy($state, unvisited, d, T_{\max}$)
+    \IF{$nextPort = None$}
+        \STATE break
+    \ENDIF
+    \STATE $state \gets$ BuyInCurrentPort($state, itemsByPort, nextPort$)
+    \IF{$state.capital < K_{\min}$}
+        \STATE break
+    \ENDIF
+    \STATE $state.capital \gets state.capital - K_{\min}$
+    \STATE $state.time \gets state.time + d[state.current\_port][nextPort]$
+    \STATE $state.current\_port \gets nextPort$
+    \STATE Append $nextPort$ to $state.route$
+    \STATE Remove $nextPort$ from $unvisited$
+\ENDWHILE
+\IF{$state.current\_port \neq 0$}
+    \STATE $state.time \gets state.time + d[state.current\_port][0]$
+    \STATE $state.capital \gets state.capital - K_{\min}$
+    \STATE $state.current\_port \gets 0$
+    \STATE Append $0$ to $state.route$
+    \STATE $state \gets$ SellAllInAmsterdam($state, itemsByPort$)
+\ENDIF
+\STATE \textbf{return} $state$
+
+\STATE
+
+\STATE \textbf{Function} SellInCurrentPort($state, itemsByPort$)
+\STATE $newState \gets state.copy()$
+\STATE $newInventory \gets \text{[ ]}$
+\FOR{each $merch$ in $state.inventory$}
+    \STATE $(i,k,w,buyPrice) \gets merch$
+    \IF{$i \neq state.current\_port$}
+        \STATE $sellPrice \gets itemsByPort[state.current\_port][k].sellPrice$
+        \IF{$sellPrice > buyPrice$}
+            \STATE $newState.capital \gets newState.capital + sellPrice$
+        \ELSE
+            \STATE Append $merch$ to $newInventory$
+        \ENDIF
+    \ELSE
+        \STATE Append $merch$ to $newInventory$
+    \ENDIF
+\ENDFOR
+\STATE $newState.inventory \gets newInventory$
+\STATE \textbf{return} $newState$
+
+\STATE
+
+\STATE \textbf{Function} BuyInCurrentPort($state, itemsByPort, nextPort$)
+\STATE $newState \gets state.copy()$
+\STATE $availableCapacity \gets C_{\max} - state.usedCapacity$
+\STATE $availableCapital \gets state.capital - K_{\min}$
+\STATE $candidates \gets \text{[ ]}$
+\FOR{each item $k$ in itemsByPort[state.current\_port]}
+    \IF{$item.w \leq availableCapacity$ \AND $item.buyPrice \leq availableCapital$}
+        \STATE $profit \gets itemsByPort[nextPort][k].sellPrice - item.buyPrice$
+        \IF{$profit > 0$}
+            \STATE Append $(k, item.w, item.buyPrice, profit)$ to $candidates$
+        \ENDIF
+    \ENDIF
+\ENDFOR
+\STATE Sort $candidates$ by $profit/weight$ descending
+\FOR{each $(k,w,buyPrice,profit)$ in $candidates$}
+    \IF{$availableCapacity \geq w$ \AND $availableCapital \geq buyPrice$}
+        \STATE $newState.capital \gets newState.capital - buyPrice$
+        \STATE $newState.usedCapacity \gets newState.usedCapacity + w$
+        \STATE Append Merchandise($port,k,w,buyPrice$) to $newState.inventory$
+        \STATE $availableCapacity \gets availableCapacity - w$
+        \STATE $availableCapital \gets availableCapital - buyPrice$
+    \ENDIF
+\ENDFOR
+\STATE \textbf{return} $newState$
+
+\STATE
+
+\STATE \textbf{Function} SelectNextPortGreedy($state, unvisited, d, T_{\max}$)
+\STATE $bestPort \gets None$
+\STATE $bestScore \gets -\infty$
+\STATE $current \gets state.current\_port$
+\FOR{each $port$ in $unvisited$}
+    \STATE $travelTime \gets d[current][port]$
+    \STATE $timeBack \gets d[port][0]$
+    \STATE $totalTime \gets state.time + travelTime + timeBack$
+    \IF{$totalTime \leq T_{\max}$}
+        \STATE $distanceScore \gets 1 / (travelTime + 10^{-6})$
+        \STATE $itemsCount \gets |itemsByPort[port]|$
+        \STATE $itemScore \gets \min(itemsCount/10, 1)$
+        \STATE $score \gets distanceScore + itemScore$
+        \IF{$score > bestScore$}
+            \STATE $bestScore \gets score$
+            \STATE $bestPort \gets port$
+        \ENDIF
+    \ENDIF
+\ENDFOR
+\STATE \textbf{return} $bestPort$
+
+\STATE
+
+\STATE \textbf{Function} SellAllInAmsterdam($state, itemsByPort$)
+\STATE $newState \gets state.copy()$
+\FOR{each $merch$ in $state.inventory$}
+    \STATE $(i,k,w,buyPrice) \gets merch$
+    \STATE $sellPrice \gets itemsByPort[0][k].sellPrice$
+    \STATE $newState.capital \gets newState.capital + sellPrice$
+\ENDFOR
+\STATE $newState.inventory \gets \text{[ ]}$
+\STATE \textbf{return} $newState$
+
+\STATE
+
+\STATE \textbf{Function} EvaluateState($state, itemsByPort$)
+\STATE $newState \gets$ SellAllInAmsterdam($state, itemsByPort$)
+\STATE \textbf{return} $newState.capital$
+
+\STATE
+
+\STATE \textbf{Function} SimulateRoute($route, d, itemsByPort$)
+\IF{$route = \text{[ ]}$ \OR $route[0] \neq 0$}
+    \STATE \textbf{return} None
+\ENDIF
+\STATE $state \gets$ State($current\_port=0, capital=K_0, time=0,$
+\STATE \hspace{1cm} $usedCapacity=0, route=[0], inventory=\text{[ ]}$)
+\FOR{$i=1$ to $|route|-1$}
+    \STATE $state \gets$ SellInCurrentPort($state, itemsByPort$)
+    \STATE $nextPort \gets route[i]$
+    \STATE $travelTime \gets d[state.current\_port][nextPort]$
+    \IF{$state.time + travelTime > T_{\max}$}
+        \STATE \textbf{return} None
+    \ENDIF
+    \STATE $state \gets$ BuyInCurrentPort($state, itemsByPort, nextPort$)
+    \IF{$state.capital < 0$ \OR $state.usedCapacity > C_{\max}$}
+        \STATE \textbf{return} None
+    \ENDIF
+    \STATE $state.time \gets state.time + travelTime$
+    \STATE $state.current\_port \gets nextPort$
+    \STATE $state.capital \gets state.capital - K_{\min}$
+    \STATE Append $nextPort$ to $state.route$
+\ENDFOR
+\STATE $state \gets$ SellAllInAmsterdam($state, itemsByPort$)
+\STATE \textbf{return} $state$
+
+\STATE
+
+\STATE \textbf{Function} GenerateNeighbor($state$)
+\STATE $route \gets state.route.copy()$
+\IF{$|route| = 3$}
+    \STATE $available \gets \{1..n-1\} \setminus route$
+    \IF{$available \neq \emptyset$}
+        \STATE $insertPos \gets$ random position in $[1,|route|-2]$
+        \STATE $insertPort \gets$ random choice from $available$
+        \STATE Insert $insertPort$ at $insertPos$ in $route$
+    \ENDIF
+    \STATE \textbf{return} $route$
+\ENDIF
+\STATE $operation \gets$ random choice in \{swap, insert, remove, reverse\}
+\IF{$operation = swap$}
+    \STATE Swap two random ports in $route$ (not Amsterdam)
+\ELSIF{$operation = insert$}
+    \STATE Insert a random unvisited port into $route$ (excluding first and last positions)
+\ELSIF{$operation = remove$}
+    \STATE Remove a random port from $route$ (not Amsterdam)
+\ELSIF{$operation = reverse$}
+    \STATE Reverse a random segment of $route$ (excluding first and last positions)
+\ENDIF
+\STATE \textbf{return} $route$
+
+\STATE
+
+\STATE \textbf{Function} SimulatedAnnealing($initialState, maxIter$)
+\STATE $currentState \gets initialState$
+\STATE $bestState \gets initialState.copy()$
+\STATE $currentValue \gets$ EvaluateState($currentState, itemsByPort$)
+\STATE $bestValue \gets currentValue$
+\STATE $temperature \gets 1000$
+\STATE $coolingRate \gets 0.995$
+\FOR{$iter=1$ to $maxIter$}
+    \STATE $newRoute \gets$ GenerateNeighbor($currentState$)
+    \STATE $newState \gets$ SimulateRoute($newRoute, d, itemsByPort$)
+    \IF{$newState = None$}
+        \STATE continue
+    \ENDIF
+    \STATE $newValue \gets$ EvaluateState($newState, itemsByPort$)
+    \STATE $\Delta \gets newValue - currentValue$
+    \IF{$\Delta > 0$ \OR random() $< e^{\Delta/temperature}$}
+        \STATE $currentState \gets newState$
+        \STATE $currentValue \gets newValue$
+        \IF{$currentValue > bestValue$}
+            \STATE $bestState \gets currentState.copy()$
+            \STATE $bestValue \gets currentValue$
+        \ENDIF
+    \ENDIF
+    \STATE $temperature \gets temperature \cdot coolingRate$
+\ENDFOR
+\STATE \textbf{return} $bestState$
+
+\end{algorithmic}
+
+
 \end{document}

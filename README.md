@@ -16,3 +16,34 @@ En cada puerto, el capitán encontrará una lista de mercancías disponibles, co
 - El tiempo es oro; la duración total del viaje, incluyendo el tiempo de navegación entre puertos, no debe exceder el plazo fijado por los inversores.
 
 El objetivo del capitán es claro: planificar la ruta y las transacciones en cada puerto de tal manera que, al regresar a Amsterdam, el capital final de la expedición sea el máximo posible, superando con creces la inversión inicial.
+
+
+## Ejecución de los algoritmos
+1. Ir al directorio `src/solutions`:
+   ```bash
+   cd src/solutions
+   ```
+Nota: En el archivo main.py, descomentar la línea del algoritmo que se desea ejecutar.
+Por defecto, está activa la solución por fuerza bruta.
+Si se quiere probar otro algoritmo, basta con descomentar su línea correspondiente y comentar las demás.
+
+2. Ejecutar el comando:
+    ```bash
+    python main.py
+    ```
+
+## Ejecución del tester
+1. Ir al directorio `src`:
+    ```bash
+    cd src
+    ```
+
+2. Generar los casos de prueba con el siguiente comando:
+    ```bash
+    python -m tester.generator
+    ```
+
+3. Ejecutar los algoritmos sobre los casos de prueba generados:
+    ```bash
+    python -m tester.validator
+    ```

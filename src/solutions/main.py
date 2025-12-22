@@ -1,8 +1,8 @@
 from math import inf
 from typing import List
 from utils import Item 
-from brute_force_CHP import solve
-# from brute_force_JAT import solve
+# from brute_force_CHP import solve
+from brute_force_JAT import solve
 # from efficient import solve
 
 n: int = 3

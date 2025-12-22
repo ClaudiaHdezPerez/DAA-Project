@@ -7,6 +7,7 @@
 \usepackage{hyperref}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{float}
 
 \title{Proyecto Final de Diseño y Análisis de Algoritmos
 
@@ -21,7 +22,7 @@
 \maketitle
 
 \begin{abstract}
-Este documento presenta el análisis completo del problema \emph{``El Comerciante Holandés''}.
+Este documento presenta el análisis completo del problema \emph{``El Comerciante Holandés''}. Se incluye la formalización matemática del problema, análisis de complejidad computacional, diseño de algoritmos por fuerza bruta y eficiente (con uso de metaheurística), y finalmente una comparación entre ambos enfoques. 
 \end{abstract}
 
 \section{Definición del problema}
@@ -367,6 +368,30 @@ Una vez obtenida la solución inicial, la función \textbf{SimulatedAnnealing} s
 El proceso de enfriamiento reduce gradualmente la temperatura, haciendo que el algoritmo se vuelva más estricto en la aceptación de soluciones. Al finalizar las iteraciones, se devuelve el mejor estado encontrado.
 
 En conjunto, el flujo del algoritmo combina una construcción inicial \textit{greedy} con una búsqueda aproximada basada en \textit{Simulated Annealing}, explorando rutas vecinas y evaluando las decisiones de compra y venta de mercancías para aproximarse a una solución de alta calidad.
+
+\section{Análisis empírico}
+Con el objetivo de evaluar el desempeño del algoritmo eficiente frente al enfoque de fuerza bruta,
+se realizaron una serie de experimentos variando tanto el número de ítems como el número de puertos
+en las instancias del problema. 
+El análisis completo se encuentra en el directorio \path{../src/validation}. 
+
+\subsection{Calidad de la solución}
+Al comparar la calidad de la solución obtenida por el algoritmo eficiente frente a la solución óptima de fuerza bruta tanto para variaciones de puertos (ver \hyperref[fig:quality_1]{Figura 1}) como variaciones de items (ver \hyperref[fig:quality_2]{Figura 2})
+la solución eficiente siempre se mantiene sobre el 70\% de la solución óptima.
+
+\subsection{Tiempos de ejecución}
+El algoritmo de fuerza bruta presenta tiempos prácticamente nulos para instancias muy pequeñas, pero crecen rápidamente conforme aumenta el tamaño. 
+Mientras que el algoritmo eficiente mantiene tiempos muy bajos y estables en todas las instancias.
+Este comportamiento se observa en las comparaciones de ambos algoritmos, en las \hyperref[fig:time_1]{Figura 3} y \hyperref[fig:time_2]{Figura 4}
+
+\subsection{Tamaño máximo de instancia para fuerza bruta}
+El algoritmo de fuerza bruta puede resolver en tiempos razonables (menos de un minuto ver \hyperref[fig:timeouts_2]{Figura 5}) instancias de 3 puertos y hasta 10 items. A partir de 6 puertos con 4 items, los tiempos crecen de forma exponencial (comportamiento esperado por la complejidad) y superan los 60 segundos (ver \hyperref[fig:timeouts_2]{Figura 6}). 
+
+\subsection{Comportamiento del algoritmo eficiente}
+Para las instancias del problema donde la solución óptima es no viajar o hacer ventas en puertos inmediatos a los puertos donde se realizó la compra el algoritmo eficiente devuelve una solución cercana al óptimo. 
+Sin embargo, para aquellas instancias donde la mejor estrategia para una mercancía es venderla en un puerto muy distante a donde se compró (con respecto a la cantidad de puertos que los separan en la ruta), funciona peor porque se basa en no retener mercancías con ganancia conocida.
+
+En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de soluciones es pequeño y potencialmente lo explora en casi su totalidad.
 
 \newpage
 \section*{\LARGE{Anexos}}
@@ -768,6 +793,56 @@ En conjunto, el flujo del algoritmo combina una construcción inicial \textit{gr
 \STATE \textbf{return} $bestState$
 
 \end{algorithmic}
+
+\newpage
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{./images/analisis_puertos_fijos_0_0.png}
+    \caption{Calidad con puertos fijos}
+    \label{fig:quality_1}
+\end{minipage}\hfill
+\begin{minipage}{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{./images/analisis_items_fijos_0_0.png}
+    \caption{Calidad con items fijos}
+    \label{fig:quality_2}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{./images/analisis_puertos_fijos_0_1.png}
+    \caption{Tiempos con puertos fijos}
+    \label{fig:time_1}
+\end{minipage}\hfill
+\begin{minipage}{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{./images/analisis_items_fijos_0_1.png}
+    \caption{Tiempo con items fijos}
+    \label{fig:time_2}
+\end{minipage}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{./images/analisis_puertos_fijos_0_2.png}
+    \caption{Timeouts con puertos fijos}
+    \label{fig:timeouts_1}
+\end{minipage}\hfill
+\begin{minipage}{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{./images/analisis_items_fijos_0_2.png}
+    \caption{Timeouts con items fijos}
+    \label{fig:timeouts_2}
+\end{minipage}
+\end{figure}
 
 
 \end{document}

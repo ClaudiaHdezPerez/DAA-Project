@@ -50,30 +50,24 @@ Antes de abordar cualquier solución algorítmica, es fundamental establecer una
 Sea:
 \begin{itemize}
     \item $G = (V, E)$: grafo completo de $n$ puertos, donde $V = \{0, 1, \dots, n-1\}$ (0 representa Ámsterdam, punto de inicio y fin).
-    \item $d_{ij}$: tiempo de navegación entre puertos $i$ y $j$. Se asume:
-
-    \begin{itemize}
-        \item $d_{ii} = 0, \quad \forall i$
-        \item $d_{ij} = d_{ji}, \quad \forall i, j$
-        \item $d_{ij} \le d_{ik} + d_{kj}, \quad \forall i, k, j$
-    \end{itemize}
+    \item $d_{i,j}$: tiempo de navegación entre puertos $i$ y $j$. Se asume $d_{i,i} = 0, \quad \forall i$ (no se navega a ningún lugar).
     \item $T_{max}$: tiempo máximo total permitido para la expedición.
     \item $C_{max}$: capacidad máxima de carga del barco.
-    \item $K_0$: capital inicial proporcionado por los inversores.
-    \item $K_{min}$: capital mínimo que debe mantenerse tras cada transacción (para gastos operativos).
+    \item $k_0$: capital inicial proporcionado por los inversores.
+    \item $k_{\min}$: capital mínimo que debe mantenerse tras cada transacción para el pago de impuestos portuarios (son los mismos en todos los puertos) y salarios de la tripulación, que incluyen un bonus extra para que costeen las posibles reparaciones.
 \end{itemize}
 
 En cada puerto $i \in V$:
 \begin{itemize}
-    \item $M_i = \{(w_{ik}, p_{ik}^{compra}, p_{ik}^{venta})\}_{k=1}^{m_i}$: conjunto de $m_i$ mercancías disponibles, donde:
+    \item $M_i = [(w_{i,k}, p_{i,k}^{compra}, p_{i,k}^{venta})]_{k=1}^{m_i}$: lista de $m_i$ mercancías disponibles, donde:
     \begin{itemize}
-        \item $w_{ik} \in \mathbb{R}$: peso de la mercancía $k$ en puerto $i$
-        \item $p_{ik}^{compra} \in \mathbb{R}$: precio de compra de la mercancía $k$ en puerto $i$
-        \item $p_{ik}^{venta} \in \mathbb{R}$: precio de venta de la mercancía $k$ en puerto $i$
+        \item $w_{i,k} \in \mathbb{R}$: peso de la mercancía $k$ en puerto $i$
+        \item $p_{i,k}^{compra} \in \mathbb{R}$: precio de compra de la mercancía $k$ en puerto $i$
+        \item $p_{i,k}^{venta} \in \mathbb{R}$: precio de venta de la mercancía $k$ en puerto $i$
     \end{itemize}
-    \item \textbf{Importante}: No hay garantía de que $p_{ik}^{venta} > p_{jk}^{compra}$ $ \forall i \neq j$. Pueden haber mercancías con pérdida potencial, lo que obliga al capitán a tomar decisiones estratégicas. Sin embargo sí se garantiza que 
+    \item \textbf{Importante}: No hay garantía de que $p_{i,k}^{venta} > p_{j,k}^{compra}$ $ \forall i \neq j$. Pueden haber mercancías con pérdida potencial, lo que obliga al capitán a tomar decisiones estratégicas. Sin embargo sí se garantiza que 
     
-    $p_{ik}^{venta} \leq p_{ik}^{compra}$ $\forall i$ (los del puerto tampoco son tontos, no van a pagar más de lo que ofertan).
+    $p_{i,k}^{venta} \leq p_{i,k}^{compra}$ $\forall i$ (los del puerto tampoco son tontos, no van a pagar más de lo que ofertan).
 \end{itemize}
 
 \subsection{Estado del Sistema}
@@ -87,43 +81,54 @@ donde:
     \item $L_i \subseteq \{m = (i', k, w, p^{compra}): i', k \in \mathbb{N}; w, p^{compra} \in \mathbb{R}\}$: conjunto de mercancías a bordo, donde cada mercancía está identificada por:
     \begin{itemize}
         \item $i'$: puerto donde fue comprada
-        \item $k$: índice de la mercancía en ese puerto
+        \item $k$: índice de la mercancía
         \item $w$: peso de la mercancía
         \item $p^{compra}$: precio pagado por la mercancía
     \end{itemize}
     \item $R_i \subseteq V$: conjunto de puertos ya visitados (ruta parcial).
-    \item $t_i \in \mathbb{R}^+$: tiempo acumulado hasta llegar al puerto $i$.
+    \item $t_i \in \mathbb{R}^+ \cup \{0\}$: tiempo acumulado hasta llegar al puerto $i$.
 \end{itemize}
 
+\
+
+Para los estados inicial y final (ambos con $i = 0$) se definen las tuplas: $S_{inicial} = (k_0, [\text{ }], [0], 0)$ y $S_{final} = (K_{final}, L_f, R_f, t_f)$   
+
 \subsection{Operaciones}
-Al llegar a un puerto $i$, el capitán realiza secuencialmente:
+Al llegar a un puerto $i$, el capitán puede realizar:
 
 \begin{enumerate}
-    \item \textbf{Venta parcial}: Para cada mercancía $g = (i_g, k_g, w_g, p_g^{compra}) \in L_i$, el capitán decide si venderla en el puerto actual $i$ obteniendo $p_{i,k_g}^{venta}$ (precio de venta de esa mercancía en puerto $i$). Sea $M_i' \subseteq L_i$ el subconjunto de mercancías vendidas:
+    \item \textbf{Venta parcial}: Para cada mercancía $G = (i_g, k, w_g, p_g^{compra}) \in L_i$, el capitán decide si venderla en el puerto actual $i$ obteniendo $p_{i,k}^{venta}$ (precio de venta de esa mercancía en puerto $i$). Sea $M_i' \subseteq L_i$ el subconjunto de mercancías vendidas:
     \[
-    K_i \leftarrow K_i + \sum_{g \in M_i'} p_{i,k_g}^{venta}
+    K_i \leftarrow K_i + \sum_{g \in M_i'} p_{i,k}^{venta}
     \]
     Las mercancías vendidas se eliminan de la carga: $L_i \leftarrow L_i \setminus M_i'$.
     
     \item \textbf{Compra selectiva}: Considerando las mercancías disponibles en $M_i$, el capitán selecciona un subconjunto $C_i \subseteq M_i$ para comprar, sujeto a:
     \begin{itemize}
-        \item \textbf{Restricción financiera}: \[K_i - \sum_{(w,p^{compra},p^{venta}) \in C_i} p^{compra} \geq K_{min}\]
+        \item \textbf{Restricción financiera}: \[K_i - \sum_{(w,p^{compra},p^{venta}) \in C_i} p^{compra} \geq k_{\min}\]
         \item \textbf{Restricción de capacidad}: \[\sum_{g \in L_i} w_g + \sum_{(w,p^{compra},p^{venta}) \in C_i} w \leq C_{max}\]
     \end{itemize}
-    Las mercancías compradas se añaden a bordo: \[ \forall (w,p^{compra},p^{venta}) \in C_i: \quad L_i \leftarrow (i, k, w, p^{compra})\] 
+    Las mercancías compradas se añaden a bordo: \[ \forall m_k = (w,p^{compra},p^{venta}) \in C_i: \quad L_i \leftarrow (i, k, w, p^{compra})\] 
     
     Luego se actualiza el capital:
     \[
     K_i \leftarrow K_i - \sum_{(w,p^{compra},p^{venta}) \in C_i} p^{compra}
     \]
-    
-    \item \textbf{Selección de próximo destino}: Sea $j \in V \setminus (R_i \cup \{i\})$ un candidato a próximo puerto, $j$ es seleccionable si:
-\[
-t_i + d_{ij} + d_{j0} \leq T_{max}
-\]
-Si ningún $j$ cumple esta condición, el capitán debe regresar a Ámsterdam ($j = 0$).
-Luego de seleccionar el próximo destino, se actualiza el recorrido actual: \[R_i \leftarrow R_i \cup \{i\}\]
 \end{enumerate}
+
+Cuando termine sus transacciones debe \textbf{seleccionar su próximo destino}: 
+
+Sea $j \in V \setminus (R_i \cup \{i\})$ un candidato a próximo puerto, $j$ es seleccionable si:
+\[
+t_i + d_{i,j} \leq T_{max}
+\]
+Si ningún $j$ cumple esta condición, el camino es inválido.
+Luego de seleccionar el próximo destino, se actualiza el recorrido actual: 
+\[K_j \leftarrow K_i - k_{\min}\]
+\[L_j \leftarrow L_i\]
+\[R_j \leftarrow R_i \cup \{i\}\] 
+\[t_j \leftarrow t_i + d_{i,j}\]
+\[i \leftarrow j\]
 
 \subsection{Función Objetivo}
 
@@ -137,8 +142,8 @@ Luego de seleccionar el próximo destino, se actualiza el recorrido actual: \[R_
     \]
     Es decir, ningún puerto no-inicial se repite en la ruta.
     \item \textbf{Tiempo límite}: $t_f \leq T_{max}$, siendo $t_f$ el tiempo de llegada a Ámsterdam al finalizar el viaje.
-    \item \textbf{Capital suficiente para operatividad}: $\forall i$, $K_i \geq K_{min}$.
-    \item \textbf{Capacidad}: $\forall i$, $\sum_{g \in L_i} w_g \leq C_{max}$.
+    \item \textbf{Capital suficiente para operatividad}: $\forall i$, $K_i \geq k_{\min}$.
+    \item \textbf{Capacidad}: $\forall i$, $\sum_{G = (i_g, k, w_g, p_g^{compra}) \in L_i} w_g \leq C_{max}$.
 \end{enumerate}
 
 \section{Análisis de Complejidad Computacional}
@@ -156,8 +161,8 @@ Sea un certificado de solución una secuencia de puertos $\pi = (v_0, v_1, \dots
 
 \begin{enumerate}
     \item \textbf{Verificación de ruta:} Comprobar que $\pi$ es una ruta simple (excepto por $v_0$ y $v_{m+1}$) y que el tiempo total de navegación cumple $\sum d_{v_i, v_{i+1}} \leq T_{max}$. Esta operación se realiza en $O(m)$ mediante un vector de presencia para los nodos.
-    \item \textbf{Verificación de carga:} En cada puerto $v_i$, se calcula el peso total sumando las mercancías retenidas en la bodega $L_i$ después de vender y las nuevas adquisiciones $C_i \subseteq M_i$, verificando que $\sum_{g \in L_i} w_g + \sum_{C_i} w \leq C_{max}$. La complejidad es $O(m \cdot \max|L_i|)$, lo cual es polinomial respecto a la cantidad de mercancías.
-    \item \textbf{Verificación financiera:} Simular el flujo de caja $K_i$ sumando ingresos por ventas $M'_i$ y restando costos de compra $C_i$. Se verifica que en todo momento $K_i \geq K_{min}$ y que al regresar a Ámsterdam el capital final $K_f \geq K_{objetivo}$.
+    \item \textbf{Verificación de carga:} En cada puerto $v_i$, se calcula el peso total sumando las mercancías retenidas en la bodega $L_i$ después de vender y las nuevas adquisiciones $C_i \subseteq M_i$, verificando que $\sum_{G = (i_g, k, w_g, p_g^{compra}) \in L_i} w_g + \sum_{(w,p^{compra},p^{venta}) \in C_i} w \leq C_{max}$. La complejidad es $O(m \cdot \max|L_i|)$, lo cual es polinomial respecto a la cantidad de mercancías.
+    \item \textbf{Verificación financiera:} Simular el flujo de caja $K_i$ sumando ingresos por ventas $M'_i$ y restando costos de compra $C_i$. Se verifica que en todo momento $K_i \geq k_{\min}$ y que al regresar a Ámsterdam el capital final $K_f \geq K_{objetivo}$.
 \end{enumerate}
 
 Como todas las operaciones de verificación se realizan en tiempo polinomial respecto al tamaño de la entrada, el problema \textbf{pertenece a NP}.
@@ -168,25 +173,38 @@ Para demostrar la NP-Completitud, se reduce una instancia del problema de decisi
 \begin{quote}
     \textit{\textbf{Definición de TSP:} Dado un grafo $G_{TSP}=(V', E', \omega)$ y una distancia límite $L$, ¿existe un tour que visite todos los nodos de $V'$ tal que la distancia recorrida sea a lo sumo L?}
 
-    $\omega(e_{ij})$: distancia entre nodos $i$ y $j$.
+    $\omega(e_{i,j})$: distancia entre nodos $i$ y $j$.
 \end{quote}
 
 \subsubsection{Construcción de la reducción:}
 Dada una instancia de \textbf{TSP}, se construye una instancia del problema de la siguiente forma:
 \begin{itemize}
-    \item \textbf{Grafo y Tiempos:} $V = V'$, $d_{ij} = peso(E'_{ij})$, y se fija $T_{max} = L$.
-    \item \textbf{Incentivo a la Visita:} En cada puerto $i \in V \setminus \{0\}$, se define una única mercancía $m_i \in M_i$ con $w=0$ y $p_{compra}=0$. Su precio de venta es 0 en todo puerto, excepto en Ámsterdam ($v_0$), donde $p_{venta}=1$.
-    \item \textbf{Condiciones Iniciales:} $K_0 = 0$, $K_{min} = 0$, $C_{max} = \infty$.
-    \item \textbf{Meta de Ganancia:} Se define la meta de capital final como $K_{objetivo} = |V|-1$.
-\end{itemize} 
+    \item \textbf{Grafo y Tiempos:} \\
+    \[T_{max} = L \quad O(1),\] 
+    \[V = V' \cup \{s\} \quad O(n) \quad \text{y}\]
+    \[ 
+    d_{i,j} = 
+    \begin{cases} 
+    peso(e_{i,j}) & \text{si } e_{i,j} \in E' \wedge  i,j \neq s, \\
+    0 & i = s \lor j = s, \\
+    \infty & \text{si } e_{i,j} \notin E'. 
+    \end{cases} 
+    \quad O(n ^ 2)
+    \]
+    \item \textbf{Incentivo a la Visita:} En cada puerto $i \in V \setminus \{s\}$, se define una única mercancía $m'_i \in M_i$ con $w=0$ y $p_{compra}=0$. Su precio de venta es 0 en todo puerto, excepto en Ámsterdam (s), donde $p_{venta}=1$. O(n)
+    \item \textbf{Condiciones Iniciales:} $k_0 = 0$, $k_{\min} = 0$, $C_{max} = \infty$. O(1)
+    \item \textbf{Meta de Ganancia:} Se define la meta de capital final como $K_{objetivo} = |V|-1$. O(1)
+\end{itemize}
+
+Por tanto la reducción es ejecutable en \textbf{tiempo polinomial}.
 
 \subsubsection{Demostración de equivalencia:}
 \begin{itemize}
     \item ($\Rightarrow$) Si \textbf{TSP} tiene un tour de longitud de a lo sumo \textit{L}, el capitán puede seguir dicho tour visitando cada puerto una vez, recoger las $|V|-1$ mercancías y volver a Ámsterdam dentro del tiempo $T_{max}$. Al venderlas, obtiene $K_f = |V|-1$, satisfaciendo el problema.
-    \item ($\Leftarrow$) Si el problema tiene solución con capital de al menos \textit{K}, el capitán necesariamente visitó todos los puertos para recolectar el capital (dada la ausencia de otros beneficios). Como lo hizo en un tiempo menor de $T_{max}$, el recorrido representa un tour válido para \textbf{TSP}.
+    \item ($\Leftarrow$) Si el problema tiene solución con capital de al menos \textit{$K_{objetivo}$}, el capitán necesariamente visitó todos los puertos para recolectar el capital (dada la ausencia de otros beneficios). Como lo hizo en un tiempo menor de $T_{max}$, el recorrido representa un tour válido para \textbf{TSP}.
 \end{itemize}
 
-La reducción es ejecutable en tiempo polinomial y dado que \textbf{TSP} se reduce al problema, concluimos que es \textbf{NP-Completo}.
+Dado que \textbf{TSP} se reduce al problema, se concluye que es \textbf{NP-Completo}.
 
 \section{Diseño de soluciones algorítmicas}
 
@@ -195,16 +213,16 @@ Para resolver el problema, se han diseñado dos soluciones por fuerza bruta y un
 \subsection{Entradas}
 \begin{itemize}
     \item $n$: número de puertos.
-    \item $d[i][j]$: matriz de distancias entre puertos ($d_{ij}$).
+    \item $d[i][j]$: matriz de distancias entre puertos ($d_{i,j}$).
     \item $T_{\max}$: tiempo máximo permitido para viajar.
     \item $C_{\max}$: capacidad máxima de carga del barco.
-    \item $K_0$: capital inicial disponible.
-    \item $K_{\min}$: capital mínimo requerido en todo momento.
+    \item $k_0$: capital inicial disponible.
+    \item $k_{\min}$: capital mínimo requerido en todo momento.
     \item $M_i$: conjunto de ítems disponibles en el puerto $i$, cada uno con:
     \begin{itemize}
-        \item $w_{ik}$: peso del ítem $k$ en el puerto $i$.
-        \item $p_{ik}^{buy}$: precio de compra del ítem.
-        \item $p_{ik}^{sell}$: precio de venta del ítem.
+        \item $w_{i,k}$: peso del ítem $k$ en el puerto $i$.
+        \item $p_{i,k}^{buy}$: precio de compra del ítem.
+        \item $p_{i,k}^{sell}$: precio de venta del ítem.
     \end{itemize}
 \end{itemize}
 
@@ -218,21 +236,21 @@ Para resolver el problema, se han diseñado dos soluciones por fuerza bruta y un
 \begin{itemize}
     \item \textbf{Item}: representa un ítem disponible en un puerto. Contiene:
     \begin{itemize}
-        \item $w$: peso del ítem ($w_{ik}$).
-        \item $buy\_price$: precio de compra ($p_{ik}^{buy}$).
-        \item $sell\_price$: precio de venta ($p_{ik}^{sell}$).
+        \item $w$: peso del ítem ($w_{i,k}$).
+        \item $buy\_price$: precio de compra ($p_{i,k}^{buy}$).
+        \item $sell\_price$: precio de venta ($p_{i,k}^{sell}$).
     \end{itemize}
     \item \textbf{Merchandise}: representa una mercancía que ya ha sido comprada y está a bordo. Contiene:
     \begin{itemize}
         \item $i$: puerto en el que fue adquirida.
-        \item $k$: índice del ítem en ese puerto.
+        \item $k$: índice del ítem.
         \item $w$: peso de la mercancía.
         \item $buy\_price$: precio de compra pagado.
     \end{itemize}
     \item \textbf{itemsByPort}: matriz de dimensión $n \times m$ que contiene los ítems disponibles en cada puerto.
     \begin{itemize}
         \item $n$: número de puertos.
-        \item $m$: número de ítems por puerto (se asume igual en todos los puertos por comodidad).
+        \item $m$: número de ítems diferentes (se asume igual en todos los puertos por comodidad).
         \item La ausencia de un ítem se representa como un objeto \texttt{Item} con:
         \begin{itemize}
             \item peso $w = \infty$,
@@ -244,7 +262,7 @@ Para resolver el problema, se han diseñado dos soluciones por fuerza bruta y un
     \begin{itemize}
         \item $current\_port$: puerto actual en el que se encuentra.
         \item $capital$: capital disponible en ese instante.
-        \item $time$: tiempo acumulado de viaje y operaciones.
+        \item $time$: tiempo acumulado de viaje.
         \item $used\_capacity$: capacidad de carga utilizada en el barco.
         \item $route$: lista de puertos visitados en orden.
         \item $inventory$: lista de mercancías (\texttt{Merchandise}) que están actualmente a bordo.
@@ -324,7 +342,7 @@ Dado que el algoritmo permite rutas de cualquier longitud $k$ (desde $0$ hasta $
 Esta sumatoria es del orden de $n!$ (tiende a $e \cdot n!$).
 
 En cuanto a las decisiones de compra y venta, en cada puerto se exploran todos los subconjuntos de mercancías a bordo para vender ($2^{|L|}$ posibilidades) y todos los subconjuntos de mercancías disponibles para comprar ($2^m$ posibilidades). 
-En el peor caso, $|L| \leq m$, por lo que el espacio de decisiones por puerto es $O(4^m)$.
+$|L| \leq m$, por lo que el espacio de decisiones por puerto es $O(4^m)$.
 
 \begin{itemize}
     \item Exploración de rutas: $\Theta(n!)$, por el orden de visita de los puertos.
@@ -401,16 +419,16 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
 \end{algorithm}
 \begin{algorithmic}[1]
 
-\STATE \textbf{Function} Solve($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, itemsByPort$)
+\STATE \textbf{Function} Solve($n, d, T_{\max}, C_{\max}, k_0, k_{\min}, itemsByPort$)
 \STATE Initialize $portsVisited \gets$ list of \texttt{False}
 \STATE $portsVisited[0] \gets$ \texttt{True}
 \STATE $m \gets$ number of items at port 0
-\STATE \textbf{return} $\max(K_0, Buy(n, d, T_{\max}, C_{\max}, K_0, K_{\min}, m,$
+\STATE \textbf{return} $\max(k_0, Buy(n, d, T_{\max}, C_{\max}, k_0, k_{\min}, m,$
 \STATE \hspace{1cm} $itemsByPort, 0, \text{[ ]}, portsVisited, 0))$
 
 \STATE
 
-\STATE \textbf{Function} Sell($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, size,$
+\STATE \textbf{Function} Sell($n, d, T_{\max}, C_{\max}, k_0, k_{\min}, size,$
 \STATE \hspace{1cm} $itemsByPort, port, itemsOnBoard, portsVisited, j$)
 \STATE $purchaseGain \gets Buy(...)$
 \IF{$j \geq$ length of $itemsOnBoard$}
@@ -427,17 +445,17 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
 
 \STATE
 
-\STATE \textbf{Function} Buy($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, size,$
+\STATE \textbf{Function} Buy($n, d, T_{\max}, C_{\max}, k_0, k_{\min}, size,$
 \STATE \hspace{1cm} $itemsByPort, port, itemsOnBoard, portsVisited, j$)
-\STATE $travelGain \gets K_0$
-\IF{$K_{\min} > travelGain$}
+\STATE $travelGain \gets k_0$
+\IF{$k_{\min} > travelGain$}
     \STATE \textbf{return} $-1$
 \ENDIF
 \STATE $travelGain \gets Travel(...)$
 \IF{$j \geq size$}
     \STATE \textbf{return} $travelGain$
 \ENDIF
-\IF{$K_{\min} \leq funds$ \AND $capacityLeft \geq 0$}
+\IF{$k_{\min} \leq funds$ \AND $capacityLeft \geq 0$}
     \STATE Append to $itemsOnBoard$: Merchandise($i=port,$ $k=j,$
     \STATE \hspace{1cm} $w=currentItem.w,$
     $buyPrice=currentItem.buyPrice$)
@@ -449,9 +467,9 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
 
 \STATE
 
-\STATE \textbf{Function} Travel($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, size,$
+\STATE \textbf{Function} Travel($n, d, T_{\max}, C_{\max}, k_0, k_{\min}, size,$
 \STATE \hspace{1cm} $itemsByPort, port, itemsOnBoard, portsVisited$)
-\STATE $finalGain \gets K_0 + \sum$ selling prices at initial port
+\STATE $finalGain \gets k_0 + \sum$ selling prices at initial port
 \STATE $maxGain \gets -1$
 \FOR{each port $i$}
     \IF{not visited and enough time}
@@ -472,18 +490,18 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
 \end{algorithm}
 \begin{algorithmic}[1]
 
-\STATE \textbf{Function} Solve($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, itemsByPort$)
-\STATE \textbf{return} \_Solve($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, itemsByPort,$
-\STATE \hspace{1cm} $0, K_0, [\texttt{False} \text{ for } i=1..n], \text{[ ]}$ $,[\text{[ ]} \text{ for } i=1..n]$)
+\STATE \textbf{Function} Solve($n, d, T_{\max}, C_{\max}, k_0, k_{\min}, itemsByPort$)
+\STATE \textbf{return} \_Solve($n, d, T_{\max}, C_{\max}, k_0, k_{\min}, itemsByPort,$
+\STATE \hspace{1cm} $0, k_0, [\texttt{False} \text{ for } i=1..n], \text{[ ]}$ $,[\text{[ ]} \text{ for } i=1..n]$)
 
 \STATE
 
-\STATE \textbf{Function} \_Solve($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, itemsByPort,$
+\STATE \textbf{Function} \_Solve($n, d, T_{\max}, C_{\max}, k_0, k_{\min}, itemsByPort,$
 \STATE \hspace{1cm} $port_i, maxProfit, visited, route, L_i$)
 \IF{$port_i = 0$ \AND $visited[0] = \texttt{True}$}
     \STATE Append $0$ to $route$
     \STATE $maxProfit \gets \max(maxProfit,$ 
-    \STATE \hspace{1cm} \_ProfitByRoute($C_{\max}, K_0, K_{\min}, itemsByPort,$
+    \STATE \hspace{1cm} \_ProfitByRoute($C_{\max}, k_0, k_{\min}, itemsByPort,$
     \STATE \hspace{2cm} $route, L_i, 0, maxProfit$))
     \STATE Remove last element from $route$
     \STATE \textbf{return} $maxProfit$
@@ -494,8 +512,8 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
     \STATE \hspace{1cm} $T_{\max} - (d[port_i][j] + d[j][0]) \geq 0$}
         \STATE $visited[j] \gets \texttt{True}$
         \STATE $maxProfit \gets \max(maxProfit,$ 
-        \STATE \hspace{1cm} \_Solve($n, d, T_{\max} - d[port_i][j], C_{\max}, K_0,$
-        \STATE \hspace{2cm} $K_{\min}, itemsByPort, j, maxProfit, visited, route, L_i$))
+        \STATE \hspace{1cm} \_Solve($n, d, T_{\max} - d[port_i][j], C_{\max}, k_0,$
+        \STATE \hspace{2cm} $k_{\min}, itemsByPort, j, maxProfit, visited, route, L_i$))
         \STATE $visited[j] \gets \texttt{False}$
     \ENDIF
 \ENDFOR
@@ -504,26 +522,26 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
 
 \STATE
 
-\STATE \textbf{Function} \_ProfitByRoute($C_{\max}, K_0, K_{\min}, itemsByPort,$
+\STATE \textbf{Function} \_ProfitByRoute($C_{\max}, k_0, k_{\min}, itemsByPort,$
 \STATE \hspace{1cm} $route, L_i, i, maxProfit$)
-\IF{$K_0 < 0$}
+\IF{$k_0 < 0$}
     \STATE \textbf{return} $-\infty$
 \ENDIF
 \STATE $port \gets route[i]$
 \IF{$i = |route|-1$}
-    \STATE \textbf{return} $K_0 +$ \_SellAll($L_i[port], itemsByPort[port]$)
+    \STATE \textbf{return} $k_0 +$ \_SellAll($L_i[port], itemsByPort[port]$)
 \ENDIF
 \FOR{each $sell$ in \_Sell($L_i[port], itemsByPort[port], \text{[ ]}, 0, \text{[ ]}$)}
     \STATE $rest \gets L_i[port] \setminus sell[0]$
     \STATE $sold \gets sell[0]$
     \STATE $capacitySold \gets$ \_CalculateWeight($sold$)
     \FOR{each $buy$ in \_Buy($port, itemsByPort[port], \text{[ ]}, 0, \text{[ ]},$
-    \STATE \hspace{1cm} $C_{\max}+capacitySold, K_0+sell[1]-K_{\min}$)}
+    \STATE \hspace{1cm} $C_{\max}+capacitySold, k_0+sell[1]-k_{\min}$)}
         \STATE $capacityBought \gets$ \_CalculateWeight($buy[0]$)
         \STATE $L_i[route[i+1]] \gets rest + buy[0]$
         \STATE $maxProfit \gets \max(maxProfit,$ 
         \STATE \hspace{1cm} \_ProfitByRoute($C_{\max}+capacitySold-capacityBought,$
-        \STATE \hspace{2cm} $K_0+sell[1]-K_{\min}-buy[1], K_{\min},$
+        \STATE \hspace{2cm} $k_0+sell[1]-k_{\min}-buy[1], k_{\min},$
         \STATE \hspace{2cm} $itemsByPort, route, L_i, i+1, maxProfit$))
     \ENDFOR
 \ENDFOR
@@ -582,19 +600,19 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
 \end{algorithm}
 \begin{algorithmic}[1]
 
-\STATE \textbf{Function} Solve($n, d, T_{\max}, C_{\max}, K_0, K_{\min}, itemsByPort$)
+\STATE \textbf{Function} Solve($n, d, T_{\max}, C_{\max}, k_0, k_{\min}, itemsByPort$)
 \STATE $initialState \gets$ GreedyInitialSolution()
 \IF{$|initialState.route| = 1$}
     \STATE \textbf{return} $initialState.capital$
 \ENDIF
 \STATE $bestState \gets$ SimulatedAnnealing($initialState, maxIter=2000$)
 \STATE $finalCapital \gets$ EvaluateState($bestState, itemsByPort$)
-\STATE \textbf{return} $\max(finalCapital, K_0)$
+\STATE \textbf{return} $\max(finalCapital, k_0)$
 
 \STATE
 
 \STATE \textbf{Function} GreedyInitialSolution()
-\STATE $state \gets$ State($current\_port=0, capital=K_0, time=0,$
+\STATE $state \gets$ State($current\_port=0, capital=k_0, time=0,$
 \STATE \hspace{1cm} $usedCapacity=0, route=[0], inventory=\text{[ ]}$)
 \STATE $unvisited \gets \{1..n-1\}$
 \WHILE{$unvisited \neq \emptyset$}
@@ -604,10 +622,10 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
         \STATE break
     \ENDIF
     \STATE $state \gets$ BuyInCurrentPort($state, itemsByPort, nextPort$)
-    \IF{$state.capital < K_{\min}$}
+    \IF{$state.capital < k_{\min}$}
         \STATE break
     \ENDIF
-    \STATE $state.capital \gets state.capital - K_{\min}$
+    \STATE $state.capital \gets state.capital - k_{\min}$
     \STATE $state.time \gets state.time + d[state.current\_port][nextPort]$
     \STATE $state.current\_port \gets nextPort$
     \STATE Append $nextPort$ to $state.route$
@@ -615,7 +633,7 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
 \ENDWHILE
 \IF{$state.current\_port \neq 0$}
     \STATE $state.time \gets state.time + d[state.current\_port][0]$
-    \STATE $state.capital \gets state.capital - K_{\min}$
+    \STATE $state.capital \gets state.capital - k_{\min}$
     \STATE $state.current\_port \gets 0$
     \STATE Append $0$ to $state.route$
     \STATE $state \gets$ SellAllInAmsterdam($state, itemsByPort$)
@@ -648,7 +666,7 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
 \STATE \textbf{Function} BuyInCurrentPort($state, itemsByPort, nextPort$)
 \STATE $newState \gets state.copy()$
 \STATE $availableCapacity \gets C_{\max} - state.usedCapacity$
-\STATE $availableCapital \gets state.capital - K_{\min}$
+\STATE $availableCapital \gets state.capital - k_{\min}$
 \STATE $candidates \gets \text{[ ]}$
 \FOR{each item $k$ in itemsByPort[state.current\_port]}
     \IF{$item.w \leq availableCapacity$ \AND $item.buyPrice \leq availableCapital$}
@@ -717,7 +735,7 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
 \IF{$route = \text{[ ]}$ \OR $route[0] \neq 0$}
     \STATE \textbf{return} None
 \ENDIF
-\STATE $state \gets$ State($current\_port=0, capital=K_0, time=0,$
+\STATE $state \gets$ State($current\_port=0, capital=k_0, time=0,$
 \STATE \hspace{1cm} $usedCapacity=0, route=[0], inventory=\text{[ ]}$)
 \FOR{$i=1$ to $|route|-1$}
     \STATE $state \gets$ SellInCurrentPort($state, itemsByPort$)
@@ -732,7 +750,7 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
     \ENDIF
     \STATE $state.time \gets state.time + travelTime$
     \STATE $state.current\_port \gets nextPort$
-    \STATE $state.capital \gets state.capital - K_{\min}$
+    \STATE $state.capital \gets state.capital - k_{\min}$
     \STATE Append $nextPort$ to $state.route$
 \ENDFOR
 \STATE $state \gets$ SellAllInAmsterdam($state, itemsByPort$)

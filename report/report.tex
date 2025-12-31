@@ -9,6 +9,8 @@
 \usepackage{xcolor}
 \usepackage{float}
 
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
+
 \title{Proyecto Final de Diseño y Análisis de Algoritmos
 
 \
@@ -250,7 +252,7 @@ Para resolver el problema, se han diseñado dos soluciones por fuerza bruta y un
     \item \textbf{itemsByPort}: matriz de dimensión $n \times m$ que contiene los ítems disponibles en cada puerto.
     \begin{itemize}
         \item $n$: número de puertos.
-        \item $m$: número de ítems diferentes (se asume igual en todos los puertos por comodidad).
+        \item $m$: número de ítems diferentes.
         \item La ausencia de un ítem se representa como un objeto \texttt{Item} con:
         \begin{itemize}
             \item peso $w = \infty$,
@@ -274,29 +276,97 @@ Para resolver el problema, se han diseñado dos soluciones por fuerza bruta y un
 El \hyperref[alg:jat]{Algoritmo 1} es una de las implementaciones de fuerza bruta, que se describe a continuación.
 
 \paragraph{Descripción del flujo del algoritmo.}
-El algoritmo comienza en la función \textbf{Solve}, que inicializa el estado de los puertos visitados y llama a la función \textbf{Buy} para explorar las decisiones iniciales de compra. 
+El algoritmo comienza en la función \textbf{Solve}, que inicializa el estado del capital, la capacidad y los puertos visitados (inicialmente solo con Ámsterdam). Dado que en Ámsterdam no hay mercancías que vender al inicio, \textbf{Solve} llama directamente a la función \textbf{Buy} para explorar las decisiones iniciales de compra. 
 
-La función \textbf{Buy} evalúa, en cada puerto, si es posible adquirir una mercancía dadas las restricciones de capital mínimo y capacidad de carga. Si la compra es viable, la mercancía se añade temporalmente a la carga y se realiza una llamada recursiva para continuar explorando. También se contempla la opción de no comprar y avanzar al siguiente ítem. En todo momento se compara la ganancia obtenida por comprar con la ganancia de viajar directamente (\textbf{Travel}).
+La función \textbf{Sell} se encarga de explorar, en cada puerto visitado, todas las posibles ventas de las mercancías que están a bordo. Para cada mercancía se considera la opción de venderla o conservarla, generando todos los subconjuntos posibles de ventas. Cada decisión actualiza el capital y la capacidad, y se evalúa recursivamente hasta cubrir todas las combinaciones. El resultado es la mejor ganancia alcanzable tras decidir qué vender en ese puerto.
 
-La función \textbf{Sell} se encarga de explorar las posibles ventas de las mercancías que están a bordo en un puerto dado. Para cada mercancía se considera la opción de venderla o mantenerla, actualizando el capital y la capacidad, y llamando recursivamente a sí misma para evaluar el resto de mercancías. El resultado es la mejor ganancia entre vender y no vender.
+Una vez fijado un subconjunto de ventas, la función \textbf{Buy} explora las compras posibles en ese puerto. Para cada mercancía disponible se considera la opción de adquirirla o no, siempre que se cumplan las restricciones de capital mínimo y capacidad de carga. Así se generan todos los subconjuntos de compras factibles.
 
-La función \textbf{Travel} evalúa la posibilidad de desplazarse a otros puertos no visitados, siempre que el tiempo restante lo permita. Marca el puerto como visitado, llama a \textbf{Sell} para explorar las transacciones en ese puerto, y luego desmarca el puerto para permitir otras rutas. El valor devuelto es la máxima ganancia alcanzable considerando todas las rutas posibles.
+La función \textbf{Travel} simula el desplazamiento hacia otros puertos no visitados, siempre que el tiempo restante lo permita. Marca el puerto como visitado, llama a \textbf{Sell} para iniciar las transacciones en ese nuevo puerto, y luego lo desmarca para permitir otras rutas alternativas. El valor devuelto es la máxima ganancia alcanzable considerando todas las rutas posibles.
 
-En conjunto, el flujo del algoritmo es una búsqueda exhaustiva recursiva que combina decisiones de compra, venta y viaje, manteniendo en todo momento las restricciones de tiempo, capacidad y capital mínimo.
+En conjunto, el flujo del algoritmo es una búsqueda exhaustiva recursiva que, en cada puerto, explora primero todas las ventas posibles y, a partir de cada subconjunto vendido, todas las compras factibles. Tras completar las transacciones, se simulan los viajes a otros puertos y se repite el proceso, manteniendo siempre las restricciones de tiempo, capacidad y capital mínimo.
+
 
 \paragraph{Correctitud.}
-El algoritmo es correcto porque explora todas las combinaciones posibles de decisiones (comprar, vender, viajar o no hacerlo) y siempre mantiene las restricciones globales. Al devolver el máximo entre las ganancias obtenidas en cada rama de decisión, garantiza que el resultado final corresponde a la mejor estrategia posible. La recursividad asegura que no se omite ninguna ruta ni combinación de transacciones.
+El algoritmo impone en cada puerto el orden fijo de realizar primero todas las ventas posibles y, a partir de cada subconjunto vendido, explorar todas las compras factibles. 
 
-\paragraph{Complejidad Temporal} El algoritmo explora todas las posibles rutas que comienzan en Ámsterdam y regresan dentro del tiempo máximo permitido. La clave está en que no basta con elegir un subconjunto de puertos: también importa el \textbf{orden en que se visitan}. Por eso, lo que se explora son 
-\textbf{variaciones sin repetición}: todas las secuencias posibles de longitud $k$ tomadas de $n$ puertos. El número de secuencias de longitud $k$ es: \[ P(n,k) = \frac{n!}{(n-k)!}. \] Dado que el algoritmo permite rutas de cualquier longitud $k$ (desde $0$ hasta $n$), el total de rutas posibles es: \[ \sum_{k=0}^{n} P(n,k). \] Esta sumatoria es del orden de $n!$ (tiende a $e \cdot n!$). En general: 
+Esto no reduce el espacio de soluciones, porque para cualquier variación de orden de transacciones (mezclando ventas y compras en distinto orden), el resultado final en términos de capital, capacidad y mercancías a bordo depende únicamente de qué conjunto se vendió y qué conjunto se compró, no del orden en que se hicieron. 
 
-\begin{itemize} 
-    \item Exploración de rutas: $\Theta(n!)$, por el orden de visita de los puertos. 
-    \item Decisiones de compra/venta: $\Theta(2^m)$ por puerto, ya que cada ítem puede comprarse/venderse o no. 
-    \item Complejidad Total: \[ O(n! \cdot 2^m). \] 
+Por tanto, basta con analizar el caso “vender primero, comprar después” para cubrir todas las variaciones posibles de esas transacciones. El algoritmo, al recorrer todos los subconjuntos de ventas y luego todas las compras factibles, garantiza que ninguna combinación se omite.
+
+Finalmente, como \textbf{Travel} explora todas las rutas posibles empezando y terminando en Ámsterdam, el procedimiento completo asegura que se consideran todas las combinaciones de puertos y transacciones, devolviendo siempre la mejor ganancia alcanzable.
+
+
+
+\paragraph{Complejidad Temporal}
+El algoritmo explora todas las posibles rutas que comienzan en Ámsterdam y regresan dentro del tiempo máximo permitido. La clave está en que no basta con elegir un subconjunto de puertos: también importa el \textbf{orden en que se visitan}. Por eso, lo que se explora son 
+\textbf{variaciones sin repetición}: todas las secuencias posibles de longitud $k$ tomadas de $n$ puertos. El número de secuencias de longitud $k$ es:
+
+
+\[
+P(n,k) = \frac{n!}{(n-k)!}.
+\]
+
+
+
+Dado que el algoritmo permite rutas de cualquier longitud $k$ (desde $0$ hasta $n$), el total de rutas posibles es:
+
+
+\[
+\sum_{k=0}^{n} P(n,k) = \sum_{k=0}^{n} \frac{n!}{(n-k)!}.
+\]
+
+
+Si se hace el cambio de variable $j = n-k$, entonces cuando $k=0$ se tiene $j=n$, y cuando $k=n$ se tiene $j=0$. La sumatoria se reescribe como:
+
+
+\[
+\sum_{k=0}^{n} \frac{n!}{(n-k)!} = \sum_{j=0}^{n} \frac{n!}{j!} = n! \cdot \sum_{j=0}^{n} \frac{1}{j!}.
+\]
+
+
+La serie
+
+
+\[
+\sum_{j=0}^{\infty} \frac{1}{j!}
+\]
+
+
+es precisamente la expansión en serie de potencias de $e^x$ ($\sum_{k=0}^{\infty} \frac{x^k}{k!}$) evaluada en $x=1$, es decir:
+
+
+\[
+e = \sum_{j=0}^{\infty} \frac{1}{j!}.
+\]
+
+
+
+Por tanto, cuando $n \to \infty$, la sumatoria parcial $\sum_{j=0}^{n} \tfrac{1}{j!}$ converge a $e$. Esto implica que:
+
+
+\[
+\sum_{k=0}^{n} P(n,k) \sim e \cdot n!.
+\]
+
+
+El número de rutas posibles es del orden de $n!$, más precisamente tiende a $e \cdot n!$. En cuanto a las decisiones de compra y venta, en cada puerto se exploran todos los subconjuntos de mercancías a bordo para vender ($2^{|L|}$ posibilidades) y todos los subconjuntos de mercancías disponibles para comprar ($2^m$ posibilidades). 
+$|L| \leq m \times n$, por lo que el espacio de decisiones por puerto es $O(4^{m \times n})$.
+En general:
+\begin{itemize}
+    \item Exploración de rutas: $O(n!)$, por el orden de visita de los puertos.
+    \item Decisiones de compra/venta: exponenciales en el número de ítems que pueden haber a bordo $O(4^{m \times n})$
+    \item Complejidad Total: 
+    
+
+\[
+    O\!\left(n! \cdot 4^{m \times n}\right),
+    \]
 \end{itemize}
 
-lo que lo hace impracticable para instancias grandes. Sin embargo, es útil como referencia exacta para instancias pequeñas y como base para comparar heurísticas.
+
+
+Esto lo hace impracticable para instancias grandes, pero útil como referencia exacta para instancias pequeñas y como base para comparar heurísticas.
 
 \
 
@@ -309,49 +379,24 @@ Cada vez que se regresa al puerto inicial, se evalúa la ruta completa mediante 
 
 La función \textbf{\_ProfitByRoute} calcula la ganancia máxima posible siguiendo la secuencia de puertos de la ruta. 
 En cada puerto se consideran todas las combinaciones de ventas (\textbf{\_Sell}) de las mercancías a bordo y todas las combinaciones de compras (\textbf{\_Buy}) de las mercancías disponibles en el puerto. 
-Después de aplicar las decisiones de compra y venta, se actualizan las cargas y se continúa recursivamente hacia el siguiente puerto de la ruta. 
+Después de aplicar las decisiones de venta y compra (primero se ejecutan las ventas), se actualizan las cargas y se continúa recursivamente hacia el siguiente puerto de la ruta. 
 La función \textbf{\_SellAll} se utiliza para liquidar todas las mercancías al final del viaje, y \textbf{\_CalculateWeight} asegura que las restricciones de capacidad se respeten.
 
-En conjunto, el flujo del algoritmo es una búsqueda exhaustiva que combina la exploración de rutas posibles con la evaluación de todas las combinaciones de compra y venta en cada puerto, manteniendo las restricciones de tiempo, capacidad y capital mínimo.
+En conjunto, el flujo del algoritmo es una búsqueda exhaustiva que combina la exploración de rutas posibles con la evaluación, primero de todas las ventas posibles y, a partir de cada subconjunto vendido, todas las compras factibles. Tras completar las transacciones, se simulan los viajes a otros puertos y se repite el proceso, manteniendo siempre las restricciones de tiempo, capacidad y capital mínimo.
 
 \paragraph{Correctitud.}
-El algoritmo es correcto porque explora todas las rutas factibles que comienzan y terminan en Ámsterdam dentro del tiempo máximo, y para cada ruta considera exhaustivamente todas las combinaciones de compra y venta de mercancías. 
-Al devolver siempre el máximo entre las ganancias obtenidas en cada rama de decisión, garantiza que el resultado final corresponde a la mejor estrategia posible. 
-La recursividad asegura que no se omite ninguna ruta ni ninguna combinación de transacciones.
+El algoritmo es correcto porque explora todas las rutas factibles que comienzan y terminan en Ámsterdam dentro del tiempo máximo, y para cada ruta considera todas las formas de vender primero y comprar después, por lo que la demostración es análoga al algoritmo anterior.
 
 \paragraph{Complejidad Temporal.}
-El algoritmo explora todas las posibles rutas de longitud variable que comienzan en Ámsterdam y regresan dentro del tiempo máximo permitido. 
-No basta con elegir un subconjunto de puertos: también importa el \textbf{orden en que se visitan}. 
-Por eso, lo que se explora son \textbf{variaciones sin repetición}: todas las secuencias posibles de longitud $k$ tomadas de $n$ puertos. 
-El número de secuencias de longitud $k$ es:
-
-
-\[
-P(n,k) = \frac{n!}{(n-k)!}.
-\]
-
-
-Dado que el algoritmo permite rutas de cualquier longitud $k$ (desde $0$ hasta $n$), el total de rutas posibles es:
-
-
-\[
-\sum_{k=0}^{n} P(n,k).
-\]
-
-
-Esta sumatoria es del orden de $n!$ (tiende a $e \cdot n!$).
-
-En cuanto a las decisiones de compra y venta, en cada puerto se exploran todos los subconjuntos de mercancías a bordo para vender ($2^{|L|}$ posibilidades) y todos los subconjuntos de mercancías disponibles para comprar ($2^m$ posibilidades). 
-$|L| \leq m$, por lo que el espacio de decisiones por puerto es $O(4^m)$.
-
+Análogamente al algoritmo anterior, se tiene:
 \begin{itemize}
     \item Exploración de rutas: $\Theta(n!)$, por el orden de visita de los puertos.
-    \item Decisiones de compra/venta: $O(4^m)$ por puerto, considerando todas las combinaciones de venta y compra.
+    \item Decisiones de compra/venta: $O(4^{m \times n})$ por puerto, considerando todas las combinaciones de venta y compra.
     \item Complejidad Total: 
     
 
 \[
-    O(n! \cdot 4^m).
+    O(n! \cdot 4^{m \times n}).
     \]
 
 
@@ -368,9 +413,18 @@ El algoritmo comienza en la función \textbf{Solve}, que genera una solución in
 
 La función \textbf{GreedyInitialSolution} utiliza tres funciones auxiliares: 
 \begin{itemize}
-    \item \textbf{SellInCurrentPort}: vende las mercancías en el puerto actual si el precio de venta es mayor que el de compra.
-    \item \textbf{BuyInCurrentPort}: selecciona mercancías prometedoras en el puerto actual usando una heurística tipo mochila 0/1, priorizando la relación ganancia/peso.
-    \item \textbf{SelectNextPortGreedy}: elige el próximo puerto a visitar en función de una puntuación heurística que combina distancia y cantidad de ítems disponibles.
+    \item \textbf{SellInCurrentPort}: vende las mercancías en el puerto actual si el precio de venta es mayor que el precio al que se compró.
+    \item \textbf{BuyInCurrentPort}: selecciona mercancías prometedoras en el puerto actual usando una heurística inspirada en la mochila fraccionaria (ordenar por ganancia/peso), aplicada en un contexto 0/1 donde los ítems se toman completos. 
+    \item \textbf{SelectNextPortGreedy}: elige el próximo puerto en función de una puntuación heurística
+
+
+    \[
+    \text{score}(p) = \frac{1}{\text{travel\_time}(p)}
+    \]
+
+
+    donde $\text{travel\_time}(p)$ es el tiempo de viaje desde el puerto actual a $p$.
+    Solo se consideran puertos cuya visita no excede el tiempo máximo permitido. Esta heurística busca favorecer puertos cercanos, que reducen el riesgo de exceder el tiempo máximo y permiten más visitas en la ruta.
 \end{itemize}
 
 Al finalizar la ruta \textit{greedy}, la función \textbf{SellAllInAmsterdam} liquida todo el inventario en el puerto inicial para calcular el capital final de la solución inicial.
@@ -391,11 +445,25 @@ En conjunto, el flujo del algoritmo combina una construcción inicial \textit{gr
 Con el objetivo de evaluar el desempeño del algoritmo eficiente frente al enfoque de fuerza bruta,
 se realizaron una serie de experimentos variando tanto el número de ítems como el número de puertos
 en las instancias del problema. 
-El análisis completo se encuentra en el directorio \path{../src/validation}. 
+El análisis completo se encuentra en \path{https://github.com/ClaudiaHdezPerez/DAA-Project/src/validation}. 
 
 \subsection{Calidad de la solución}
 Al comparar la calidad de la solución obtenida por el algoritmo eficiente frente a la solución óptima de fuerza bruta tanto para variaciones de puertos (ver \hyperref[fig:quality_1]{Figura 1}) como variaciones de items (ver \hyperref[fig:quality_2]{Figura 2})
-la solución eficiente siempre se mantiene sobre el 70\% de la solución óptima.
+la solución eficiente siempre se mantiene sobre el 70\% de la solución óptima, utilizando los hiperparámetros de la \hyperref[fig:tab1]{Tabla 1}
+
+\begin{table}[h]
+\centering
+\label{fig:tab1}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Parámetro} & \textbf{Valor} \\ \hline
+Temperatura inicial & 1000.0 \\ \hline
+Tasa de enfriamiento & 0.995 \\ \hline
+Iteraciones máximas & 2000 \\ \hline
+\end{tabular}
+\caption{Hiperparámetros utilizados en \textit{Simulate Annealing}}
+\end{table}
+
 
 \subsection{Tiempos de ejecución}
 El algoritmo de fuerza bruta presenta tiempos prácticamente nulos para instancias muy pequeñas, pero crecen rápidamente conforme aumenta el tamaño. 

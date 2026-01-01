@@ -2,8 +2,8 @@ REPORTE DE VALIDACIÓN - Comparación brute vs efficient
 ============================================================
 
 Total casos analizados: 100
-Casos con resultados coincidentes: 63
-Casos con resultados diferentes: 37
+Casos con resultados coincidentes: 64
+Casos con resultados diferentes: 36
 Casos con solo un algoritmo: 0
 Casos fallidos: 0
 
@@ -45,8 +45,8 @@ Caso 6:
   Archivo: test_case_6_solution.py
   Estado: FALLIDO
   Resultado brute: 140.4
-  Resultado efficient: 83.99999999999999
-  Diferencia: 56.400000
+  Resultado efficient: 73.8
+  Diferencia: 66.600000
 
 Caso 7:
   Archivo: test_case_7_solution.py
@@ -109,10 +109,9 @@ Caso 15:
 
 Caso 16:
   Archivo: test_case_16_solution.py
-  Estado: FALLIDO
+  Estado: PASADO
   Resultado brute: 43.5
-  Resultado efficient: 27.6
-  Diferencia: 15.900000
+  Resultado efficient: 43.5
 
 Caso 17:
   Archivo: test_case_17_solution.py
@@ -282,9 +281,10 @@ Caso 42:
 
 Caso 43:
   Archivo: test_case_43_solution.py
-  Estado: PASADO
+  Estado: FALLIDO
   Resultado brute: 76.49999999999999
-  Resultado efficient: 76.49999999999999
+  Resultado efficient: 45.9
+  Diferencia: 30.600000
 
 Caso 44:
   Archivo: test_case_44_solution.py
@@ -563,10 +563,9 @@ Caso 87:
 
 Caso 88:
   Archivo: test_case_88_solution.py
-  Estado: FALLIDO
+  Estado: PASADO
   Resultado brute: 25.1
-  Resultado efficient: 23.0
-  Diferencia: 2.100000
+  Resultado efficient: 25.1
 
 Caso 89:
   Archivo: test_case_89_solution.py

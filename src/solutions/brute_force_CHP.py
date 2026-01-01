@@ -29,7 +29,6 @@ def _solve(
     # If I stay in Amsterdam, finish the travel
     if port_i == 0 and visited[0]:
         route.append(0)
-        print(route)
         max_profit = max(
             max_profit,
             _profit_by_route(

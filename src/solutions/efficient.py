@@ -137,6 +137,16 @@ def solve(
 
         return new_state
     
+    def get_items(items: List[Item]):
+        count = 0
+        for item in items:
+            if item.buy_price == float('inf') and item.sell_price == -float('inf'):
+                continue
+            
+            count += 1
+        
+        return count
+    
     def select_next_port_greedy(state: State, unvisited: Set[int], 
                                d: List[List[float]], t_max: float) -> Optional[int]:
         """Selecciona el próximo puerto usando heurística greedy."""
@@ -152,10 +162,9 @@ def solve(
                 # Score heurístico: cuanto más cerca y más items tenga
                 # Podemos mejorarlo considerando el potencial de ganancia
                 distance_score = 1.0 / (travel_time + 1e-6)
-                items_count = len(items_by_port[port])
-                item_score = min(items_count / 10.0, 1.0)  # Normalizado
+                items_count = get_items(items_by_port[port])
                 
-                score = distance_score + item_score
+                score = distance_score + items_count
                 
                 if score > best_score:
                     best_score = score

@@ -406,6 +406,10 @@ Esto lo hace impracticable para instancias grandes, pero útil como referencia e
 
 \
 
+Dado que se implementaron dos soluciones por fuerza bruta y que, teóricamente, ambas son correctas y tienen la misma complejidad temporal, se decidió realizar una comprobación de manera empírica. Para ello se generaron 100 casos de prueba y ambos algoritmos dieron el mismo resultado en todos los casos, incluyendo casos esquinados. Además, aunque tienen una complejidad similar, los estudios de tiempo determinaron que el segundo algoritmo de fuerza bruta es ligeramente más rápido que el primero (Ver \hyperref[fig:fb_1]{Figura 1} y \hyperref[fig:fb_2]{Figura 2})
+
+\
+
 El \hyperref[alg:ef]{Algoritmo 3} es una implementación aproximada que combina una solución inicial \textit{greedy} con el método de \textit{Simulated Annealing}, y se describe a continuación.
 
 \paragraph{Descripción del flujo del algoritmo.}
@@ -441,14 +445,14 @@ El proceso de enfriamiento reduce gradualmente la temperatura, haciendo que el a
 
 En conjunto, el flujo del algoritmo combina una construcción inicial \textit{greedy} con una búsqueda aproximada basada en \textit{Simulated Annealing}, explorando rutas vecinas y evaluando las decisiones de compra y venta de mercancías para aproximarse a una solución de alta calidad.
 
-\section{Análisis empírico}
+\section{Análisis empírico de la solución eficiente}
 Con el objetivo de evaluar el desempeño del algoritmo eficiente frente al enfoque de fuerza bruta,
 se realizaron una serie de experimentos variando tanto el número de ítems como el número de puertos
 en las instancias del problema. 
 El análisis completo se encuentra en \path{https://github.com/ClaudiaHdezPerez/DAA-Project/src/validation}. 
 
 \subsection{Calidad de la solución}
-Al comparar la calidad de la solución obtenida por el algoritmo eficiente frente a la solución óptima de fuerza bruta tanto para variaciones de puertos (ver \hyperref[fig:quality_1]{Figura 1}) como variaciones de items (ver \hyperref[fig:quality_2]{Figura 2})
+Al comparar la calidad de la solución obtenida por el algoritmo eficiente frente a la solución óptima de fuerza bruta tanto para variaciones de puertos (ver \hyperref[fig:quality_1]{Figura 3}) como variaciones de items (ver \hyperref[fig:quality_2]{Figura 4})
 la solución eficiente siempre se mantiene sobre el 70\% de la solución óptima, utilizando los hiperparámetros de la \hyperref[fig:tab1]{Tabla 1}
 
 \begin{table}[h]
@@ -468,10 +472,10 @@ Iteraciones máximas & 2000 \\ \hline
 \subsection{Tiempos de ejecución}
 El algoritmo de fuerza bruta presenta tiempos prácticamente nulos para instancias muy pequeñas, pero crecen rápidamente conforme aumenta el tamaño. 
 Mientras que el algoritmo eficiente mantiene tiempos muy bajos y estables en todas las instancias.
-Este comportamiento se observa en las comparaciones de ambos algoritmos, en las \hyperref[fig:time_1]{Figura 3} y \hyperref[fig:time_2]{Figura 4}
+Este comportamiento se observa en las comparaciones de ambos algoritmos, en las \hyperref[fig:time_1]{Figura 5} y \hyperref[fig:time_2]{Figura 6}
 
 \subsection{Tamaño máximo de instancia para fuerza bruta}
-El algoritmo de fuerza bruta puede resolver en tiempos razonables (menos de un minuto ver \hyperref[fig:timeouts_2]{Figura 5}) instancias de 3 puertos y hasta 10 items. A partir de 6 puertos con 4 items, los tiempos crecen de forma exponencial (comportamiento esperado por la complejidad) y superan los 60 segundos (ver \hyperref[fig:timeouts_2]{Figura 6}). 
+El algoritmo de fuerza bruta puede resolver en tiempos razonables (menos de un minuto ver \hyperref[fig:timeouts_2]{Figura 7}) instancias de 3 puertos y hasta 10 items. A partir de 6 puertos con 4 items, los tiempos crecen de forma exponencial (comportamiento esperado por la complejidad) y superan los 60 segundos (ver \hyperref[fig:timeouts_2]{Figura 8}). 
 
 \subsection{Comportamiento del algoritmo eficiente}
 Para las instancias del problema donde la solución óptima es no viajar o hacer ventas en puertos inmediatos a los puertos donde se realizó la compra el algoritmo eficiente devuelve una solución cercana al óptimo. 
@@ -880,6 +884,22 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
 \end{algorithmic}
 
 \newpage
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{0.34\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{./images/analisis_de_tiempos_fuerza_bruta_0.png}
+    \caption{Tiempos de ejecución}
+    \label{fig:fb_1}
+\end{minipage}\hfill
+\begin{minipage}{0.34\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{./images/analisis_de_tiempos_fuerza_bruta_1.png}
+    \caption{Ratio de aceleración}
+    \label{fig:fb_2}
+\end{minipage}
+\end{figure}
 
 \begin{figure}[h]
 \centering

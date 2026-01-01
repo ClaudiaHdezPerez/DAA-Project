@@ -46,7 +46,7 @@ def _solve(
         if port_i == port_j:
             continue
         
-        if not visited[port_j] and (t_max - (d[port_i][port_j] + d[port_j][0])) >= 0:
+        if not visited[port_j] and (t_max - d[port_i][port_j]) >= 0:
             visited[port_j] = True
             max_profit = max(
                 max_profit,

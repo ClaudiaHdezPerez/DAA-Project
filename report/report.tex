@@ -577,7 +577,7 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
 \STATE Append $port_i$ to $route$
 \FOR{each port $j$ in $0..n-1$}
     \IF{$port_i \neq port_j$ \AND not $visited[j]$ \AND 
-    \STATE \hspace{1cm} $T_{\max} - (d[port_i][j] + d[j][0]) \geq 0$}
+    \STATE \hspace{1cm} $T_{\max} - d[port_i][j] \geq 0$}
         \STATE $visited[j] \gets \texttt{True}$
         \STATE $maxProfit \gets \max(maxProfit,$ 
         \STATE \hspace{1cm} \_Solve($n, d, T_{\max} - d[port_i][j], C_{\max}, k_0,$
@@ -764,8 +764,7 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
 \STATE $current \gets state.current\_port$
 \FOR{each $port$ in $unvisited$}
     \STATE $travelTime \gets d[current][port]$
-    \STATE $timeBack \gets d[port][0]$
-    \STATE $totalTime \gets state.time + travelTime + timeBack$
+    \STATE $totalTime \gets state.time + travelTime$
     \IF{$totalTime \leq T_{\max}$}
         \STATE $distanceScore \gets 1 / (travelTime + 10^{-6})$
         \STATE $itemsCount \gets |itemsByPort[port]|$

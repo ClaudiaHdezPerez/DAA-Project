@@ -11,21 +11,6 @@ sys.path.insert(0, str(src_dir / "solutions"))
 
 from solutions.utils import Item
 
-def enforce_triangle_inequality(d: List[List[float]]) -> List[List[float]]:
-    """Aplica el algoritmo de Floyd-Warshall para asegurar la desigualdad triangular."""
-    n = len(d)
-    # Hacer una copia
-    dist = [row[:] for row in d]
-    
-    # Aplicar Floyd-Warshall para encontrar caminos más cortos
-    for k in range(n):
-        for i in range(n):
-            for j in range(n):
-                if dist[i][j] > dist[i][k] + dist[k][j] + 1e-9:
-                    dist[i][j] = dist[i][k] + dist[k][j]
-                    dist[j][i] = dist[i][j]
-    
-    return dist
 
 def generate_random_instance(
     min_ports: int = 3,
@@ -47,19 +32,18 @@ def generate_random_instance(
     # 2. Generar número de tipos de mercancías (m) - IGUAL PARA TODOS LOS PUERTOS
     m = random.randint(min_items, max_items)
     
-    # 3. Generar matriz de distancias (simétrica, con 0 en diagonal) y con desigualdad triangular
-    coordinates = [(random.uniform(0, 100), random.uniform(0, 100)) for _ in range(n)]
-    
+    # 3. Generar matriz de distancias    
     d = [[0.0 for _ in range(n)] for _ in range(n)]
     for i in range(n):
-        for j in range(i+1, n):
-            x1, y1 = coordinates[i]
-            x2, y2 = coordinates[j]
+        for j in range(n):
+            if i == j:
+                d[i][j] = 0
+                continue
+                
+            x1, y1 = (random.uniform(0, 100), random.uniform(0, 100))
+            x2, y2 = (random.uniform(0, 100), random.uniform(0, 100))
             distance = math.sqrt((x2-x1)**2 + (y2-y1)**2)
             d[i][j] = round(distance, 1)
-            d[j][i] = round(distance, 1)
-            
-    d = enforce_triangle_inequality(d)
     
     # 4. Generar tiempo máximo
     if n > 1:

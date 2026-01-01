@@ -108,7 +108,7 @@ def travel(
         if (ports_visited[i] and i > 0) or i == port:
             continue
         
-        if t_max >= d[port][i] + d[i][0]:
+        if t_max >= d[port][i]:
             ports_visited[i] = True
             next_port_gain = sell(
                 n, d, t_max - d[port][i], c_max, k_0, k_min, size,

@@ -768,7 +768,8 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
 \STATE $current \gets state.current\_port$
 \FOR{each $port$ in $unvisited$}
     \STATE $travelTime \gets d[current][port]$
-    \STATE $totalTime \gets state.time + travelTime$
+    \STATE $travelBack \gets d[port][0]$
+    \STATE $totalTime \gets state.time + travelTime + travelBack$
     \IF{$totalTime \leq T_{\max}$}
         \STATE $distanceScore \gets 1 / (travelTime + 10^{-6})$
         \STATE $itemsCount \gets |itemsByPort[port]|$

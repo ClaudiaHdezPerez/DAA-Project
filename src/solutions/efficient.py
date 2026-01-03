@@ -156,7 +156,8 @@ def solve(
         
         for port in unvisited:
             travel_time = d[current][port]
-            total_time = state.time + travel_time
+            travel_back = d[port][0]
+            total_time = state.time + travel_time + travel_back
             
             if total_time <= t_max:
                 # Score heurístico: cuanto más cerca y más items tenga

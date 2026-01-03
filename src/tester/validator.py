@@ -104,7 +104,7 @@ def main():
                     details = f"✓ Coinciden: {brute_result:.2f}"
             elif status == "ERROR":
                 passed = False
-                difference = abs(brute_result - efficient_result) if brute_result is not None and efficient_result is not None else None
+                difference = brute_result - efficient_result if brute_result is not None and efficient_result is not None else None
                 if difference is not None:
                     details = f"✗ Difieren: brute={brute_result:.2f}, efficient={efficient_result:.2f} (diff={difference:.2f})"
                 else:

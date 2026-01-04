@@ -8,6 +8,7 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{float}
+\usepackage{makecell}
 
 \addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
 
@@ -480,13 +481,35 @@ Se decidió utilizar dos heurísticas para determinar el próximo puerto:
 $H1$ es la heurística descrita en la sección anterior y $H2$ es una modificación donde solo se consideran las distancias entre los puertos. En cuanto a variaciones de items, ambas tuvieron resultados similares (ver \hyperref[fig:quality_1]{Figura 3} y \hyperref[fig:quality_2]{Figura 4}). Sin embargo, al variar la cantidad de puertos $H1$ se comportó de mejor manera, estando siempre ligeramente más cerca de la solución óptima, además de indicar una posible mejora ante instancias mayores del problema (ver \hyperref[fig:quality_3]{Figura 5} y \hyperref[fig:quality_4]{Figura 6}). Por esta razón se eligió mantener $H1$ como heurística. Después de realizado los estudios se pudo comprobar que la solución eficiente se encuentra, en promedio, por encima del 70\% del óptimo de manera general, y en instancias pequeñas alrededor del 95\%.
 
 
+\subsection{Hiperparámetros de la metaheurística}
+
+
+Se relizaron estudios sobre la evolución y el rendimiento de la metaheurística empleando diferentes combinaciones de hiperparámetros, teniendo en cuenta los valores de la \hyperref[fig:tab1]{Tabla 2}
+
+
+\begin{table}[H]
+\centering
+\label{fig:tab2}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Parámetro} & \multicolumn{3}{c|}{\textbf{Valores}} \\ \hline
+Temperatura inicial & 500 & 1000 & 2000 \\ \hline
+Tasa de enfriamiento & 0.98 & 0.995 & 0.999 \\ \hline
+Iteraciones máximas & 1000 & 3000 & 5000 \\ \hline
+\end{tabular}
+\caption{Combinaciones de hiperparámetros estudiadas}
+\end{table}
+
+
+El estudio de las distintas combinaciones determinó que no existe una diferencia significativa de la calidad de la solución entre ellas ni con la utilizada originalmente. Para instancias pequeñas ($n\times m \leq 20$) incluso en tiempo son muy similares aunque en instancias grandes, como se esperaba, al aumentar el número de iteraciones crece el tiempo de ejecución y se nota una mayor diferencia. Todo esto se puede apreciar en la \hyperref[fig:hp]{Figura 7}. Por esas razones, se decidió mantener la combinación de hiperparámetros original.
+
 \subsection{Tiempos de ejecución}
 El algoritmo de fuerza bruta presenta tiempos prácticamente nulos para instancias muy pequeñas, pero crecen rápidamente conforme aumenta el tamaño. 
 Mientras que el algoritmo eficiente mantiene tiempos muy bajos y estables en todas las instancias.
-Este comportamiento se observa en las comparaciones de ambos algoritmos, en las \hyperref[fig:time_1]{Figura 7} y \hyperref[fig:time_2]{Figura 8}
+Este comportamiento se observa en las comparaciones de ambos algoritmos, en las \hyperref[fig:time_1]{Figura 8} y \hyperref[fig:time_2]{Figura 9}
 
 \subsection{Tamaño máximo de instancia para fuerza bruta}
-El algoritmo de fuerza bruta puede resolver en tiempos razonables (menos de un minuto ver \hyperref[fig:timeouts_2]{Figura 9}) instancias de 3 puertos y hasta 10 items. A partir de 6 puertos con 4 items, los tiempos crecen de forma exponencial (comportamiento esperado por la complejidad) y superan los 60 segundos (ver \hyperref[fig:timeouts_2]{Figura 10}). 
+El algoritmo de fuerza bruta puede resolver en tiempos razonables (menos de un minuto ver \hyperref[fig:timeouts_2]{Figura 10}) instancias de 3 puertos y hasta 10 items. A partir de 6 puertos con 4 items, los tiempos crecen de forma exponencial (comportamiento esperado por la complejidad) y superan los 60 segundos (ver \hyperref[fig:timeouts_2]{Figura 11}). 
 
 \subsection{Comportamiento del algoritmo eficiente}
 Para las instancias del problema donde la solución óptima es no viajar o hacer ventas en puertos inmediatos a los puertos donde se realizó la compra el algoritmo eficiente devuelve una solución cercana al óptimo. 
@@ -942,6 +965,13 @@ En instancias pequeñas casi siempre alcanza el óptimo, dado que el espacio de 
     \caption{Calidad con items fijos solo considerando distancias como heurística}
     \label{fig:quality_4}
 \end{minipage}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\linewidth]{./images/analisis_hp_sa_completo.png}
+    \caption{Calidad y tiempo de las combinaciones de hiperparámetros estudiadas}
+    \label{fig:hp}
 \end{figure}
 
 \begin{figure}[h]

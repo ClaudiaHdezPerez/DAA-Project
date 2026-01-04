@@ -29,7 +29,10 @@ def solve(
     c_max: float,                         # C_max
     k_0: float,                           # K_0
     k_min: float,                         # K_min
-    items_by_port: List[List[Item]]       # M_i para cada puerto i
+    items_by_port: List[List[Item]],      # M_i para cada puerto i
+    max_iter=2000,
+    temperature=1000.0,
+    cooling_rate=0.995
 ) -> float:
     """
     Resuelve el problema del Comerciante Holandés usando Simulated Annealing.
@@ -275,15 +278,15 @@ def solve(
         
         return route
     
-    def simulated_annealing(initial_state: State, max_iter: int = 3000) -> State:
+    def simulated_annealing(
+        initial_state: State, max_iter=3000, 
+        temperature=1000.0, cooling_rate=0.995
+    ) -> State:
         """Algoritmo de Simulated Annealing para mejorar la solución."""
         current_state = initial_state        
         best_state = initial_state.copy()
         current_value = evaluate_state(current_state, items_by_port)
         best_value = current_value
-        
-        temperature = 1000.0
-        cooling_rate = 0.995
         
         for _ in range(max_iter):
             # Generar vecino
@@ -315,7 +318,10 @@ def solve(
     if len(initial_state.route) == 1:
         return initial_state.capital
 
-    best_state = simulated_annealing(initial_state, max_iter=2000)
+    best_state = simulated_annealing(
+        initial_state, max_iter=max_iter,
+        temperature=temperature, cooling_rate=cooling_rate
+    )
     final_capital = evaluate_state(best_state, items_by_port)
     
     return max(final_capital, k_0)
